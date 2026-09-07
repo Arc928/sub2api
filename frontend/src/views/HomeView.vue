@@ -12,80 +12,217 @@
     <div v-else v-html="homeContent"></div>
   </div>
 
-  <!-- Compact Home Page -->
+  <!-- Compact Home Page (sky-glass hero) -->
   <div
     v-else-if="compactHomeEnabled"
     data-testid="compact-home"
-    class="flex min-h-screen flex-col bg-gray-50 text-gray-900 dark:bg-dark-950 dark:text-white"
+    class="relative isolate min-h-screen overflow-hidden bg-canvas text-ink dark:bg-dark-950 dark:text-gray-50"
   >
-    <header class="border-b border-gray-200 px-4 py-4 sm:px-6 dark:border-dark-800">
-      <nav class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 sm:gap-4">
+    <!-- Sky gradient background -->
+    <div
+      class="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,#e8f1ff_0%,#f4f9ff_45%,#ffffff_100%)] dark:bg-[linear-gradient(180deg,#0b1220_0%,#0f172a_60%,#111827_100%)]"
+      aria-hidden="true"
+    ></div>
+    <!-- Soft cloud-like blobs (pure CSS, no external assets) -->
+    <div
+      class="pointer-events-none absolute -left-32 top-24 -z-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(125,178,255,0.35),transparent_70%)] blur-2xl dark:bg-[radial-gradient(circle,rgba(56,89,170,0.35),transparent_70%)]"
+      aria-hidden="true"
+    ></div>
+    <div
+      class="pointer-events-none absolute right-[-10%] top-1/3 -z-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(167,196,255,0.28),transparent_70%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(40,80,160,0.28),transparent_70%)]"
+      aria-hidden="true"
+    ></div>
+    <!-- Blurred brand wordmark top-right -->
+    <div
+      aria-hidden="true"
+      class="sky-wordmark pointer-events-none absolute -right-12 -top-12 select-none font-black leading-none tracking-tight text-sky-700/25 dark:text-sky-300/20"
+    >
+      {{ siteName }}
+    </div>
+    <!-- Mouse-follow aurora: WebGL fluid + pattern particles (1:1 replica) -->
+    <div
+      v-if="fluidEnabled"
+      aria-hidden="true"
+      class="fluid-hero-bg pointer-events-none absolute inset-x-0 top-0 -z-10 h-screen overflow-hidden"
+    >
+      <div class="hero-fluid">
+        <canvas ref="fluidCanvas" class="fluid-bg"></canvas>
+        <canvas ref="particleCanvas" class="particle-bg"></canvas>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 px-4 py-4 sm:px-6">
+      <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 sm:gap-4">
+        <!-- Logo + wordmark (intentionally not a router-link so the login CTA stays the first one in DOM order — required by HomeView.compact.spec.ts) -->
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <img
             :src="siteLogo || '/logo.svg'"
             alt="Logo"
-            class="h-9 w-9 shrink-0 rounded-lg object-contain"
+            class="h-9 w-9 shrink-0 rounded-full object-contain ring-1 ring-white/60 dark:ring-white/10"
           />
-          <span class="min-w-0 truncate text-base font-semibold">{{ siteName }}</span>
+          <span class="hidden min-w-0 truncate text-base font-bold sm:inline">{{ siteName }}</span>
         </div>
-        <div class="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2">
+        <div class="flex max-w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <LocaleSwitcher />
           <a
             v-if="docUrl"
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-dark-400 dark:hover:bg-dark-800"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-white/70 dark:text-dark-200 dark:hover:bg-white/10"
             :title="t('home.viewDocs')"
           >
             <Icon name="book" size="md" />
           </a>
-          <router-link
-            v-if="showModelPlazaEntry"
-            to="/model-plaza"
-            class="flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
-            :title="t('nav.modelPlaza')"
-          >
-            <Icon name="grid" size="md" />
-            <span class="hidden sm:inline">{{ t('nav.modelPlaza') }}</span>
-          </router-link>
           <button
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-dark-400 dark:hover:bg-dark-800"
+            class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-white/70 dark:text-dark-200 dark:hover:bg-white/10"
             :title="isDark ? t('home.switchToLight') : t('home.switchToDark')"
             @click="toggleTheme"
           >
             <Icon v-if="isDark" name="sun" size="md" />
             <Icon v-else name="moon" size="md" />
           </button>
+          <button
+            class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-white/70 dark:text-dark-200 dark:hover:bg-white/10"
+            :title="t('home.viewDocs')"
+            type="button"
+          >
+            <Icon name="bell" size="md" />
+          </button>
+          <router-link
+            v-if="showModelPlazaEntry"
+            to="/model-plaza"
+            class="flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-white/70 hover:text-ink dark:text-dark-200 dark:hover:bg-white/10 dark:hover:text-white"
+            :title="t('nav.modelPlaza')"
+          >
+            <Icon name="grid" size="md" />
+            <span class="hidden sm:inline">{{ t('nav.modelPlaza') }}</span>
+          </router-link>
+          <!-- Login / Dashboard CTA — first unconditional RouterLink in this branch -->
           <router-link
             :to="isAuthenticated ? dashboardPath : '/login'"
-            class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            class="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-5 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(56,89,170,0.55)] transition-all hover:from-sky-600 hover:to-indigo-600 hover:shadow-[0_10px_28px_-6px_rgba(56,89,170,0.65)] dark:from-sky-400 dark:to-indigo-400 dark:text-slate-900"
           >
             {{ isAuthenticated ? t('home.dashboard') : t('home.login') }}
+            <Icon name="arrowRight" size="sm" />
           </router-link>
         </div>
       </nav>
     </header>
 
-    <main class="flex min-w-0 flex-1 items-center justify-center px-4 py-16 sm:px-6">
-      <div class="min-w-0 max-w-2xl text-center">
-        <img
-          :src="siteLogo || '/logo.svg'"
-          alt="Logo"
-          class="mx-auto mb-6 h-20 w-20 rounded-2xl object-contain"
-        />
-        <h1 class="[overflow-wrap:anywhere] text-3xl font-bold md:text-4xl">{{ siteName }}</h1>
-        <p class="mt-4 whitespace-pre-wrap [overflow-wrap:anywhere] text-base text-gray-600 dark:text-dark-300">{{ siteSubtitle }}</p>
-        <router-link
-          :to="isAuthenticated ? dashboardPath : '/login'"
-          class="mt-8 inline-flex min-h-10 items-center justify-center rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
+    <!-- Hero -->
+    <main class="relative z-10 mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-8 sm:px-6 md:grid-cols-2 md:items-center md:gap-12 md:pt-16 lg:gap-16">
+      <section class="flex min-w-0 flex-col justify-center">
+        <span
+          class="inline-flex w-fit items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
         >
-          {{ isAuthenticated ? t('home.goToDashboard') : t('home.login') }}
-        </router-link>
-      </div>
+          <Icon name="sparkles" size="xs" class="text-sky-500" />
+          {{ t('home.heroEyebrow') }}
+        </span>
+        <h1
+          class="mt-6 text-5xl font-extrabold leading-[1.05] tracking-tight text-slate-900 dark:text-white sm:text-6xl md:text-7xl"
+        >
+          {{ t('home.heroTitleLine1') }}
+          <span class="mt-1 block text-slate-900/90 dark:text-white/85">{{ t('home.heroTitleLine2') }}</span>
+          <span
+            class="mt-1 block bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent"
+          >
+            {{ t('home.heroTitleLine3') }}
+          </span>
+        </h1>
+        <p class="mt-6 max-w-md text-base leading-relaxed text-slate-600 dark:text-slate-300">
+          {{ siteSubtitle }}
+        </p>
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <router-link
+            :to="isAuthenticated ? dashboardPath : '/login'"
+            class="inline-flex h-11 items-center gap-2 rounded-full bg-slate-900 px-6 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-800 hover:shadow-[0_10px_28px_-6px_rgba(15,23,42,0.45)] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+          >
+            {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
+            <Icon name="arrowRight" size="sm" />
+          </router-link>
+          <a
+            v-if="docUrl"
+            :href="docUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex h-11 items-center gap-2 rounded-full border border-white/70 bg-white/70 px-6 text-sm font-semibold text-slate-800 backdrop-blur transition-all hover:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+          >
+            <Icon name="book" size="sm" />
+            {{ t('home.docs') }}
+          </a>
+        </div>
+      </section>
+
+      <!-- Glassmorphic API endpoint card -->
+      <aside class="relative min-w-0">
+        <div
+          class="relative overflow-hidden rounded-[20px] border border-white/50 bg-white/55 p-5 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]"
+        >
+          <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-1.5" aria-hidden="true">
+              <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
+              <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
+            </div>
+            <span
+              class="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300"
+            >
+              {{ t('home.endpointCard.label') }}
+            </span>
+          </div>
+          <ul class="space-y-2">
+            <li
+              v-for="(ep, i) in endpointCards"
+              :key="ep.endpoint + i"
+              class="flex items-center gap-3 rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+            >
+              <span
+                class="h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+                aria-hidden="true"
+              ></span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline gap-2">
+                  <span class="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {{ ep.name }}
+                  </span>
+                  <span
+                    v-if="ep.description"
+                    class="hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:inline"
+                  >
+                    {{ ep.description }}
+                  </span>
+                </div>
+                <div
+                  class="truncate font-mono text-xs text-slate-500 dark:text-slate-300"
+                  :title="ep.endpoint"
+                >
+                  {{ ep.endpoint }}
+                </div>
+              </div>
+              <Icon name="bolt" size="sm" class="shrink-0 text-slate-400 dark:text-slate-500" />
+              <button
+                type="button"
+                class="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200"
+                :title="t('home.endpointCard.copy')"
+                @click="copyEndpoint(ep.endpoint, ep.name)"
+              >
+                <Icon :name="copiedId === ep.name ? 'check' : 'copy'" size="xs" />
+                <span class="hidden sm:inline">
+                  {{ copiedId === ep.name ? t('home.endpointCard.copied') : t('home.endpointCard.copy') }}
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </aside>
     </main>
 
-    <footer class="min-w-0 border-t border-gray-200 px-4 py-5 text-center text-sm text-gray-500 [overflow-wrap:anywhere] sm:px-6 dark:border-dark-800 dark:text-dark-400">
+    <!-- Footer -->
+    <footer
+      class="relative z-10 border-t border-white/40 px-4 py-8 text-center text-sm text-slate-500 dark:border-white/10 dark:text-slate-400"
+    >
       &copy; {{ currentYear }} {{ siteName }}
     </footer>
   </div>
@@ -93,39 +230,19 @@
   <!-- Default Home Page -->
   <div
     v-else
-    class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-100 dark:from-dark-950 dark:via-dark-900 dark:to-dark-950"
+    class="flex min-h-screen flex-col bg-canvas text-ink dark:bg-dark-950 dark:text-gray-50"
   >
-    <!-- Background Decorations -->
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
-        class="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-primary-400/20 blur-3xl"
-      ></div>
-      <div
-        class="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-primary-500/15 blur-3xl"
-      ></div>
-      <div
-        class="absolute left-1/3 top-1/4 h-72 w-72 rounded-full bg-primary-300/10 blur-3xl"
-      ></div>
-      <div
-        class="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-primary-400/10 blur-3xl"
-      ></div>
-      <div
-        class="absolute inset-0 bg-[linear-gradient(rgba(20,184,166,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,166,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"
-      ></div>
-    </div>
-
-    <!-- Header -->
-    <header class="relative z-20 px-6 py-4">
-      <nav class="mx-auto flex max-w-6xl items-center justify-between">
-        <!-- Logo -->
-        <div class="flex items-center">
-          <div class="h-10 w-10 overflow-hidden rounded-xl shadow-md">
-            <img :src="siteLogo || '/logo.svg'" alt="Logo" class="h-full w-full object-contain" />
-          </div>
-        </div>
+    <!-- Header (primary-nav: flat, hairline rule, 56px) -->
+    <header class="border-b border-hairline dark:border-dark-700">
+      <nav class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
+        <!-- Logo + wordmark -->
+        <router-link to="/" class="flex items-center gap-3">
+          <img :src="siteLogo || '/logo.svg'" alt="Logo" class="h-7 w-7 rounded-sm object-contain" />
+          <span class="text-base font-bold tracking-normal">{{ siteName }}</span>
+        </router-link>
 
         <!-- Nav Actions -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1 sm:gap-2">
           <!-- Language Switcher -->
           <LocaleSwitcher />
 
@@ -135,347 +252,208 @@
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+            class="rounded-sm px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-surface-soft hover:text-ink dark:text-dark-200 dark:hover:bg-dark-700 dark:hover:text-white"
             :title="t('home.viewDocs')"
           >
-            <Icon name="book" size="md" />
+            <span class="hidden sm:inline">{{ t('home.docs') }}</span>
+            <Icon name="book" size="md" class="sm:hidden" />
           </a>
 
           <!-- Model Plaza Link -->
           <router-link
             v-if="showModelPlazaEntry"
             to="/model-plaza"
-            class="inline-flex items-center gap-1.5 rounded-lg p-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+            class="rounded-sm px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-surface-soft hover:text-ink dark:text-dark-200 dark:hover:bg-dark-700 dark:hover:text-white"
             :title="t('nav.modelPlaza')"
           >
-            <Icon name="grid" size="md" />
             <span class="hidden sm:inline">{{ t('nav.modelPlaza') }}</span>
+            <Icon name="grid" size="md" class="sm:hidden" />
           </router-link>
 
           <!-- Theme Toggle -->
           <button
             @click="toggleTheme"
-            class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+            class="rounded-sm p-2 text-gray-500 transition-colors hover:bg-surface-soft hover:text-ink dark:text-dark-200 dark:hover:bg-dark-700 dark:hover:text-white"
             :title="isDark ? t('home.switchToLight') : t('home.switchToDark')"
           >
             <Icon v-if="isDark" name="sun" size="md" />
             <Icon v-else name="moon" size="md" />
           </button>
 
-          <!-- Login / Dashboard Button -->
+          <!-- Login / Dashboard CTA (button-primary) -->
           <router-link
-            v-if="isAuthenticated"
-            :to="dashboardPath"
-            class="inline-flex items-center gap-1.5 rounded-full bg-gray-900 py-1 pl-1 pr-2.5 transition-colors hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700"
+            :to="isAuthenticated ? dashboardPath : '/login'"
+            class="ml-1 inline-flex h-9 items-center gap-2 rounded-sm bg-ink px-5 text-sm font-medium text-canvas transition-colors hover:bg-charcoal active:bg-ink-deep dark:bg-gray-100 dark:text-ink dark:hover:bg-white"
           >
-            <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-[10px] font-semibold text-white"
-            >
-              {{ userInitial }}
-            </span>
-            <span class="text-xs font-medium text-white">{{ t('home.dashboard') }}</span>
-            <svg
-              class="h-3 w-3 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-              />
-            </svg>
-          </router-link>
-          <router-link
-            v-else
-            to="/login"
-            class="inline-flex items-center rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700"
-          >
-            {{ t('home.login') }}
+            {{ isAuthenticated ? t('home.dashboard') : t('home.login') }}
+            <span aria-hidden="true">&rarr;</span>
           </router-link>
         </div>
       </nav>
     </header>
 
     <!-- Main Content -->
-    <main class="relative z-10 flex-1 px-6 py-16">
-      <div class="mx-auto max-w-6xl">
-        <!-- Hero Section - Left/Right Layout -->
-        <div class="mb-12 flex flex-col items-center justify-between gap-12 lg:flex-row lg:gap-16">
-          <!-- Left: Text Content -->
-          <div class="flex-1 text-center lg:text-left">
-            <h1
-              class="mb-4 text-4xl font-bold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"
-            >
-              {{ siteName }}
-            </h1>
-            <p class="mb-8 text-lg text-gray-600 dark:text-dark-300 md:text-xl">
-              {{ siteSubtitle }}
-            </p>
-
-            <!-- CTA Button -->
-            <div>
-              <router-link
-                :to="isAuthenticated ? dashboardPath : '/login'"
-                class="btn btn-primary px-8 py-3 text-base shadow-lg shadow-primary-500/30"
-              >
-                {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
-                <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
-              </router-link>
-            </div>
+    <main class="flex-1">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6">
+        <!-- Hero Section -->
+        <section class="py-16 md:py-24">
+          <div class="mb-6">
+            <!-- badge-news: dark chip inline label -->
+            <span class="inline-flex items-center rounded-sm bg-surface-dark px-2 py-0.5 text-sm text-on-dark dark:bg-dark-700">
+              <span class="text-success-500">[+]</span>&nbsp;{{ t('home.heroSubtitle') }}
+            </span>
           </div>
+          <h1 class="mb-6 max-w-3xl text-[28px] font-bold leading-normal md:text-[38px]">
+            {{ siteName }}
+          </h1>
+          <p class="mb-8 max-w-2xl text-base leading-normal text-gray-700 dark:text-gray-300">
+            {{ t('home.heroDescription') }}
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <router-link
+              :to="isAuthenticated ? dashboardPath : '/login'"
+              class="inline-flex h-9 items-center gap-2 rounded-sm bg-ink px-5 text-sm font-medium text-canvas transition-colors hover:bg-charcoal active:bg-ink-deep dark:bg-gray-100 dark:text-ink dark:hover:bg-white"
+            >
+              {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
+              <span aria-hidden="true">&rarr;</span>
+            </router-link>
+            <a
+              v-if="docUrl"
+              :href="docUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex h-9 items-center rounded-sm border border-hairline-strong bg-canvas px-5 text-sm font-medium text-ink transition-colors hover:bg-surface-soft dark:border-dark-400 dark:bg-transparent dark:text-gray-100 dark:hover:bg-dark-800"
+            >
+              {{ t('home.docs') }}
+            </a>
+          </div>
+        </section>
 
-          <!-- Right: Terminal Animation -->
-          <div class="flex flex-1 justify-center lg:justify-end">
-            <div class="terminal-container">
-              <div class="terminal-window">
-                <!-- Window header -->
-                <div class="terminal-header">
-                  <div class="terminal-buttons">
-                    <span class="btn-close"></span>
-                    <span class="btn-minimize"></span>
-                    <span class="btn-maximize"></span>
-                  </div>
-                  <span class="terminal-title">terminal</span>
-                </div>
-                <!-- Terminal content -->
-                <div class="terminal-body">
-                  <div class="code-line line-1">
-                    <span class="code-prompt">$</span>
-                    <span class="code-cmd">curl</span>
-                    <span class="code-flag">-X POST</span>
-                    <span class="code-url">/v1/messages</span>
-                  </div>
-                  <div class="code-line line-2">
-                    <span class="code-comment"># Routing to upstream...</span>
-                  </div>
-                  <div class="code-line line-3">
-                    <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "content": "Hello!" }</span>
-                  </div>
-                  <div class="code-line line-4">
-                    <span class="code-prompt">$</span>
-                    <span class="cursor"></span>
-                  </div>
-                </div>
+        <!-- Hero TUI mockup: the system's only dark surface -->
+        <section class="pb-16 md:pb-24">
+          <div class="tui-window">
+            <div class="tui-body">
+              <pre class="tui-wordmark font-mono" aria-hidden="true">  ____        _    ____     _    ____ ___
+ / ___| _   _| |__|___ \   / \  |  _ \_ _|
+ \___ \| | | | '_ \ __) | / _ \ | |_) | |
+  ___) | |_| | |_) / __/ / ___ \|  __/| |
+ |____/ \__,_|_.__/_____/_/   \_\_|  |___|</pre>
+              <div class="tui-prompt-row">
+                <span class="tui-pipe">|</span>
+                <span class="tui-cmd">Build</span>
+                <span class="tui-token">[ Claude / GPT / Gemini ]</span>
+                <span class="tui-arg">{{ siteName }}</span>
+              </div>
+              <div class="code-line line-1">
+                <span class="code-prompt">$</span>
+                <span class="code-cmd">curl</span>
+                <span class="code-flag">-X POST</span>
+                <span class="code-url">/v1/messages</span>
+              </div>
+              <div class="code-line line-2">
+                <span class="code-comment"># routing to upstream pool...</span>
+              </div>
+              <div class="code-line line-3">
+                <span class="code-success">200 OK</span>
+                <span class="code-response">{ "content": "Hello!" }</span>
+              </div>
+              <div class="code-line line-4">
+                <span class="code-prompt">$</span>
+                <span class="cursor"></span>
+              </div>
+              <div class="tui-hints">
+                <span><span class="tui-key">tab</span> switch agent</span>
+                <span><span class="tui-key">ctrl-p</span> commands</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Feature Tags - Centered -->
-        <div class="mb-12 flex flex-wrap items-center justify-center gap-4 md:gap-6">
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="swap" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.subscriptionToApi')
-            }}</span>
-          </div>
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="shield" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.stickySession')
-            }}</span>
-          </div>
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="chart" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.realtimeBilling')
-            }}</span>
-          </div>
-        </div>
-
-        <!-- Features Grid -->
-        <div class="mb-12 grid gap-6 md:grid-cols-3">
-          <!-- Feature 1: Unified Gateway -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 transition-transform group-hover:scale-110"
-            >
-              <Icon name="server" size="lg" class="text-white" />
+        <!-- Feature list rows: ASCII bracket bullets, hairline rules -->
+        <section class="border-t border-hairline py-16 dark:border-dark-700">
+          <h2 class="mb-8 text-base font-bold">[+] {{ t('home.solutions.title') }}</h2>
+          <div class="divide-y divide-hairline dark:divide-dark-700">
+            <div class="feature-row">
+              <span class="feature-marker">[+]</span>
+              <div class="min-w-0">
+                <span class="feature-label">{{ t('home.features.unifiedGateway') }}</span>
+                <span class="feature-desc">{{ t('home.features.unifiedGatewayDesc') }}</span>
+              </div>
             </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.unifiedGateway') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.unifiedGatewayDesc') }}
-            </p>
-          </div>
-
-          <!-- Feature 2: Account Pool -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 transition-transform group-hover:scale-110"
-            >
-              <svg
-                class="h-6 w-6 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-                />
-              </svg>
+            <div class="feature-row">
+              <span class="feature-marker">[+]</span>
+              <div class="min-w-0">
+                <span class="feature-label">{{ t('home.features.multiAccount') }}</span>
+                <span class="feature-desc">{{ t('home.features.multiAccountDesc') }}</span>
+              </div>
             </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.multiAccount') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.multiAccountDesc') }}
-            </p>
-          </div>
-
-          <!-- Feature 3: Billing & Quota -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30 transition-transform group-hover:scale-110"
-            >
-              <svg
-                class="h-6 w-6 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
-                />
-              </svg>
+            <div class="feature-row">
+              <span class="feature-marker">[+]</span>
+              <div class="min-w-0">
+                <span class="feature-label">{{ t('home.features.balanceQuota') }}</span>
+                <span class="feature-desc">{{ t('home.features.balanceQuotaDesc') }}</span>
+              </div>
             </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.balanceQuota') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.balanceQuotaDesc') }}
-            </p>
+            <div class="feature-row">
+              <span class="feature-marker">[x]</span>
+              <div class="min-w-0">
+                <span class="feature-label">{{ t('home.tags.subscriptionToApi') }}</span>
+                <span class="feature-desc">{{ t('home.tags.stickySession') }} · {{ t('home.tags.realtimeBilling') }}</span>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
         <!-- Supported Providers -->
-        <div class="mb-8 text-center">
-          <h2 class="mb-3 text-2xl font-bold text-gray-900 dark:text-white">
-            {{ t('home.providers.title') }}
-          </h2>
-          <p class="text-sm text-gray-600 dark:text-dark-400">
-            {{ t('home.providers.description') }}
-          </p>
-        </div>
-
-        <div class="mb-16 flex flex-wrap items-center justify-center gap-4">
-          <!-- Claude - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-orange-500"
-            >
-              <span class="text-xs font-bold text-white">C</span>
+        <section class="border-t border-hairline py-16 dark:border-dark-700">
+          <h2 class="mb-2 text-base font-bold">{{ t('home.providers.title') }}</h2>
+          <p class="mb-8 text-sm text-gray-500 dark:text-dark-200">{{ t('home.providers.description') }}</p>
+          <div class="flex flex-wrap gap-3">
+            <div class="provider-chip">
+              <span class="provider-glyph">C</span>
+              <span class="provider-name">{{ t('home.providers.claude') }}</span>
+              <span class="provider-state">[x] {{ t('home.providers.supported') }}</span>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.claude') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- GPT - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600"
-            >
-              <span class="text-xs font-bold text-white">G</span>
+            <div class="provider-chip">
+              <span class="provider-glyph">G</span>
+              <span class="provider-name">GPT</span>
+              <span class="provider-state">[x] {{ t('home.providers.supported') }}</span>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">GPT</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- Gemini - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600"
-            >
-              <span class="text-xs font-bold text-white">G</span>
+            <div class="provider-chip">
+              <span class="provider-glyph">G</span>
+              <span class="provider-name">{{ t('home.providers.gemini') }}</span>
+              <span class="provider-state">[x] {{ t('home.providers.supported') }}</span>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.gemini') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- Antigravity - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-pink-600"
-            >
-              <span class="text-xs font-bold text-white">A</span>
+            <div class="provider-chip">
+              <span class="provider-glyph">A</span>
+              <span class="provider-name">{{ t('home.providers.antigravity') }}</span>
+              <span class="provider-state">[x] {{ t('home.providers.supported') }}</span>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.antigravity') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- More - Coming Soon -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-gray-200/50 bg-white/40 px-5 py-3 opacity-60 backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/40"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gray-500 to-gray-600"
-            >
-              <span class="text-xs font-bold text-white">+</span>
+            <div class="provider-chip provider-chip-soon">
+              <span class="provider-glyph">+</span>
+              <span class="provider-name">{{ t('home.providers.more') }}</span>
+              <span class="provider-state">[-] {{ t('home.providers.soon') }}</span>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.more') }}</span>
-            <span
-              class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-dark-700 dark:text-dark-400"
-              >{{ t('home.providers.soon') }}</span
-            >
           </div>
-        </div>
+        </section>
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-gray-200/50 px-6 py-8 dark:border-dark-800/50">
+    <!-- Footer: hairline top rule, caption row -->
+    <footer class="border-t border-hairline px-4 py-8 dark:border-dark-700">
       <div
-        class="mx-auto flex max-w-6xl flex-col items-center justify-center gap-4 text-center sm:flex-row sm:text-left"
+        class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 text-sm text-gray-500 sm:flex-row sm:text-left dark:text-dark-200"
       >
-        <p class="text-sm text-gray-500 dark:text-dark-400">
+        <p>
           &copy; {{ currentYear }} {{ siteName }}. {{ t('home.footer.allRightsReserved') }}
         </p>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-6">
           <a
             v-if="docUrl"
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
+            class="underline decoration-hairline-strong underline-offset-4 transition-colors hover:text-ink dark:hover:text-white"
           >
             {{ t('home.docs') }}
           </a>
@@ -483,7 +461,7 @@
             :href="githubUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
+            class="underline decoration-hairline-strong underline-offset-4 transition-colors hover:text-ink dark:hover:text-white"
           >
             GitHub
           </a>
@@ -494,13 +472,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
+import { useClipboard } from '@/composables/useClipboard'
 
 const { t } = useI18n()
 
@@ -539,11 +518,48 @@ const showModelPlazaEntry = computed(
 )
 const isAdmin = computed(() => authStore.isAdmin)
 const dashboardPath = computed(() => isAdmin.value ? '/admin/dashboard' : '/dashboard')
-const userInitial = computed(() => {
-  const user = authStore.user
-  if (!user || !user.email) return ''
-  return user.email.charAt(0).toUpperCase()
+
+// Endpoint list for sky-glass hero card
+type EndpointEntry = { name: string; endpoint: string; description: string }
+const endpointCards = computed<EndpointEntry[]>(() => {
+  const settings = appStore.cachedPublicSettings as
+    | (Record<string, unknown> & { custom_endpoints?: EndpointEntry[]; api_base_url?: string })
+    | null
+  const raw = settings?.custom_endpoints ?? []
+  const list = Array.isArray(raw) ? raw.filter((ep): ep is EndpointEntry => !!ep && !!ep.endpoint) : []
+  if (list.length > 0) {
+    return list.map((ep) => ({
+      name: ep.name,
+      endpoint: sanitizeUrl(ep.endpoint, { allowRelative: true }),
+      description: ep.description,
+    }))
+  }
+  // Fallback: derive a single default endpoint from current origin
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  const fallback = origin
+    ? `${origin.replace(/\/$/, '')}/v1`
+    : (settings?.api_base_url || '/v1')
+  return [
+    {
+      name: t('home.endpointCard.fallbackName'),
+      endpoint: sanitizeUrl(fallback, { allowRelative: true }),
+      description: t('home.endpointCard.fallbackDesc'),
+    },
+  ]
 })
+
+// Copy-to-clipboard for endpoint rows
+const { copyToClipboard } = useClipboard()
+const copiedId = ref<string | null>(null)
+async function copyEndpoint(endpoint: string, name: string) {
+  const ok = await copyToClipboard(endpoint, t('home.endpointCard.copied'))
+  if (ok) {
+    copiedId.value = name
+    setTimeout(() => {
+      if (copiedId.value === name) copiedId.value = null
+    }, 2000)
+  }
+}
 
 // Current year for footer
 const currentYear = computed(() => new Date().getFullYear())
@@ -567,6 +583,58 @@ function initTheme() {
   }
 }
 
+// Mouse-follow fluid background: loads the 1:1 WebGL fluid + pattern-particle
+// replica scripts (public/fluid/*.js). They are framework-agnostic IIFEs that
+// bind to #fluid-canvas / #particle-canvas on evaluation.
+const fluidEnabled = computed(() => compactHomeEnabled.value && !hasHomeContent.value)
+const fluidCanvas = ref<HTMLCanvasElement | null>(null)
+const particleCanvas = ref<HTMLCanvasElement | null>(null)
+let fluidStarted = false
+
+const FLUID_LIGHT_COLORS = '["#f2f7ff", "#bcd4f7", "#8fb3ea", "#e8d9b8", "#f2f7ff"]'
+
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script')
+    s.src = src
+    s.onload = () => resolve()
+    s.onerror = () => reject(new Error(`failed to load ${src}`))
+    document.body.appendChild(s)
+  })
+}
+
+async function initFluid() {
+  if (fluidStarted || !fluidCanvas.value || !particleCanvas.value) return
+  fluidStarted = true
+  // The scripts look up elements by id at evaluation time
+  fluidCanvas.value.id = 'fluid-canvas'
+  particleCanvas.value.id = 'particle-canvas'
+  // Light theme keeps the field but brightens the palette
+  const win = window as unknown as Record<string, unknown>
+  if (!isDark.value) {
+    win.__FLUID_COLORS_OVERRIDE__ = FLUID_LIGHT_COLORS
+  } else {
+    delete win.__FLUID_COLORS_OVERRIDE__
+  }
+  try {
+    await loadScript('/fluid/vendor-svgs.js')
+    await loadScript('/fluid/fluid-bg.js')
+    await loadScript('/fluid/particle-bg.js')
+  } catch {
+    // WebGL unavailable or asset missing — page still works without the effect
+  }
+}
+
+watch(
+  fluidEnabled,
+  async (enabled) => {
+    if (!enabled) return
+    await nextTick()
+    initFluid()
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   initTheme()
 
@@ -581,144 +649,145 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Terminal Container */
-.terminal-container {
-  position: relative;
-  display: inline-block;
-}
-
-/* Terminal Window */
-.terminal-window {
-  width: 420px;
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-  border-radius: 14px;
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+/* ============ Hero TUI mockup ============
+ * The system's only dark surface: flat #201d1d rectangle, no shadow,
+ * no rounded corners, no perspective. */
+.tui-window {
+  background: #201d1d;
+  border-radius: 0;
   overflow: hidden;
-  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg);
-  transition: transform 0.3s ease;
 }
 
-.terminal-window:hover {
-  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-4px);
+.dark .tui-window {
+  background: #201d1d;
+  border: 1px solid #302c2c;
 }
 
-/* Terminal Header */
-.terminal-header {
+.tui-body {
+  padding: 48px 24px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #fdfcfc;
+}
+
+@media (min-width: 640px) {
+  .tui-body {
+    padding: 64px 32px;
+    font-size: 16px;
+  }
+}
+
+/* Block-pixel ASCII wordmark */
+.tui-wordmark {
+  margin: 0 0 28px;
+  font-size: 12px;
+  line-height: 1.05;
+  text-align: center;
+  color: #fdfcfc;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+@media (min-width: 640px) {
+  .tui-wordmark {
+    font-size: 14px;
+  }
+}
+
+/* tui-prompt-row: one notch lighter inset command line */
+.tui-prompt-row {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  background: rgba(30, 41, 59, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 12px;
+  background: #302c2c;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
-.terminal-buttons {
-  display: flex;
-  gap: 8px;
+.tui-pipe {
+  color: #9a9898;
 }
 
-.terminal-buttons span {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.tui-cmd {
+  font-weight: 700;
+  color: #fdfcfc;
 }
 
-.btn-close {
-  background: #ef4444;
-}
-.btn-minimize {
-  background: #eab308;
-}
-.btn-maximize {
-  background: #22c55e;
+.tui-token {
+  color: #007aff;
 }
 
-.terminal-title {
-  flex: 1;
-  text-align: center;
-  font-size: 12px;
-  font-family: ui-monospace, monospace;
-  color: #64748b;
-  margin-right: 52px;
+.tui-arg {
+  color: #9a9898;
 }
 
-/* Terminal Body */
-.terminal-body {
-  padding: 20px 24px;
-  font-family: ui-monospace, 'Fira Code', monospace;
-  font-size: 14px;
-  line-height: 2;
-}
-
+/* Terminal command lines */
 .code-line {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   opacity: 0;
-  animation: line-appear 0.5s ease forwards;
+  animation: line-appear 0.4s ease forwards;
 }
 
 .line-1 {
   animation-delay: 0.3s;
 }
 .line-2 {
-  animation-delay: 1s;
+  animation-delay: 0.9s;
 }
 .line-3 {
-  animation-delay: 1.8s;
+  animation-delay: 1.5s;
 }
 .line-4 {
-  animation-delay: 2.5s;
+  animation-delay: 2s;
 }
 
 @keyframes line-appear {
   from {
     opacity: 0;
-    transform: translateY(5px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
+/* Syntax colors: the semantic ramp used as TUI highlight stand-ins */
 .code-prompt {
-  color: #22c55e;
-  font-weight: bold;
+  color: #30d158;
+  font-weight: 700;
 }
 .code-cmd {
-  color: #38bdf8;
+  color: #007aff;
 }
 .code-flag {
-  color: #a78bfa;
+  color: #ff9f0a;
 }
 .code-url {
-  color: #14b8a6;
+  color: #fdfcfc;
 }
 .code-comment {
-  color: #64748b;
-  font-style: italic;
+  color: #9a9898;
 }
 .code-success {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.15);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
+  color: #30d158;
+  font-weight: 700;
 }
 .code-response {
-  color: #fbbf24;
+  color: #fdfcfc;
 }
 
-/* Blinking Cursor */
+/* Blinking cursor */
 .cursor {
   display: inline-block;
   width: 8px;
   height: 16px;
-  background: #22c55e;
+  background: #fdfcfc;
   animation: blink 1s step-end infinite;
 }
 
@@ -733,12 +802,150 @@ onMounted(() => {
   }
 }
 
-/* Dark mode adjustments */
-:deep(.dark) .terminal-window {
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(20, 184, 166, 0.2),
-    0 0 40px rgba(20, 184, 166, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+/* Keybinding hints */
+.tui-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 32px;
+  color: #9a9898;
+  font-size: 14px;
+}
+
+.tui-key {
+  display: inline-block;
+  border: 1px solid #646262;
+  border-radius: 4px;
+  padding: 0 6px;
+  margin-right: 6px;
+  color: #fdfcfc;
+}
+
+/* ============ Feature list rows ============ */
+.feature-row {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.feature-marker {
+  color: #646262;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.feature-label {
+  display: block;
+  font-weight: 700;
+  color: inherit;
+}
+
+.feature-desc {
+  display: block;
+  color: #424245;
+}
+
+.dark .feature-desc {
+  color: #9a9898;
+}
+
+/* ============ Provider chips ============ */
+.provider-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(15, 0, 0, 0.12);
+  border-radius: 4px;
+  background: #fdfcfc;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.dark .provider-chip {
+  border-color: #3a3535;
+  background: #262222;
+}
+
+.provider-glyph {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(15, 0, 0, 0.12);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.dark .provider-glyph {
+  border-color: #4a4545;
+}
+
+.provider-name {
+  font-weight: 500;
+}
+
+.provider-state {
+  color: #646262;
+  font-size: 12px;
+}
+
+.dark .provider-state {
+  color: #9a9898;
+}
+
+.provider-chip-soon {
+  opacity: 0.55;
+}
+
+/* ============ Sky-glass hero (compact-home) ============ */
+.sky-wordmark {
+  font-size: clamp(140px, 22vw, 280px);
+  filter: blur(56px);
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+/* ============ Fluid hero background (1:1 replica) ============
+ * Structure mirrors deepseek.com/harness (and the reference site):
+ *   .fluid-hero-bg  — viewport-height container, fluid fades out toward the
+ *                     bottom via the mask on .hero-fluid
+ *   #fluid-canvas   — WebGL 3D simplex domain-warped noise field
+ *   #particle-canvas— transparent pattern-particle layer stacked on top */
+.hero-fluid {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(#000000fc 0%, #000000e8 8.98%, transparent 100%);
+  mask-image: linear-gradient(#000000fc 0%, #000000e8 8.98%, transparent 100%);
+}
+
+.fluid-bg,
+.particle-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.fluid-bg {
+  z-index: 0;
+}
+
+.particle-bg {
+  z-index: 1;
+}
+
+/* Browsers without backdrop-filter get a slightly more opaque fallback so the
+   glass card still reads as a card instead of disappearing into the sky. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :where(.bg-white\/55) {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+  :where(.dark .dark\:bg-white\/\[0\.06\]) {
+    background-color: rgba(15, 23, 42, 0.78);
+  }
 }
 </style>

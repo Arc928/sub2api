@@ -17,6 +17,18 @@ export default {
     // User-focused value proposition
     heroSubtitle: 'One Key, All AI Models',
     heroDescription: 'No need to manage multiple subscriptions. Access Claude, GPT, Gemini and more with a single API key',
+    // Sky-glass hero (compact-home)
+    heroEyebrow: 'Enterprise · AI Gateway',
+    heroTitleLine1: 'Smart Routing',
+    heroTitleLine2: 'Rock-Solid',
+    heroTitleLine3: 'Pay As You Go',
+    endpointCard: {
+      label: 'API Endpoint',
+      copy: 'Copy',
+      copied: 'Copied',
+      fallbackName: 'Default',
+      fallbackDesc: 'Use this base URL with any OpenAI / Anthropic-compatible client.'
+    },
     tags: {
       subscriptionToApi: 'Subscription to API',
       stickySession: 'Session Persistence',

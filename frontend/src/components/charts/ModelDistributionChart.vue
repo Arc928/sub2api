@@ -340,18 +340,18 @@ const distributionColspan = computed(() => showAccountCost.value ? 6 : 5)
 const activeView = ref<'model_distribution' | 'spending_ranking'>('model_distribution')
 
 const chartColors = [
-  '#3b82f6',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#ec4899',
-  '#14b8a6',
-  '#f97316',
-  '#6366f1',
-  '#84cc16',
-  '#06b6d4',
-  '#a855f7'
+  '#007aff', // accent
+  '#30d158', // success
+  '#ff9f0a', // warning
+  '#ff3b30', // danger
+  '#201d1d', // ink
+  '#646262', // mute
+  '#9a9898', // ash
+  '#0056b3', // accent-hover
+  '#24a947', // success-deep
+  '#cc7f08', // warning-deep
+  '#d70015', // danger-deep
+  '#424245' // body
 ]
 
 const displayModelStats = computed(() => {
@@ -391,7 +391,7 @@ const rankingChartData = computed(() => {
   if (otherRankingItem.value) {
     labels.push(t('admin.dashboard.spendingRankingOther'))
     data.push(otherRankingItem.value.actual_cost)
-    backgroundColor.push('#94a3b8')
+    backgroundColor.push('#9a9898')
   }
 
   return {

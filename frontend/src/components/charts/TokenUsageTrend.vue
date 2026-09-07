@@ -64,7 +64,7 @@ const chartColors = computed(() => ({
   input: '#3b82f6',
   output: '#10b981',
   cacheCreation: '#f59e0b',
-  cacheRead: '#06b6d4',
+  cacheRead: '#007aff',
   cacheHitRate: '#8b5cf6'
 }))
 

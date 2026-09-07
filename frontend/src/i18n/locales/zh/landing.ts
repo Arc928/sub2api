@@ -17,6 +17,18 @@ export default {
     // 新增：面向用户的价值主张
     heroSubtitle: '一个密钥，畅用多个 AI 模型',
     heroDescription: '无需管理多个订阅账号，一站式接入 Claude、GPT、Gemini 等主流 AI 服务',
+    // sky-glass 风格 hero（compact-home）
+    heroEyebrow: '企业级 · AI 网关',
+    heroTitleLine1: '智能路由',
+    heroTitleLine2: '稳定可靠',
+    heroTitleLine3: '按量计费',
+    endpointCard: {
+      label: 'API 接入地址',
+      copy: '复制',
+      copied: '已复制',
+      fallbackName: '默认接入',
+      fallbackDesc: '兼容 OpenAI / Anthropic 协议，直接替换 Base URL 即可使用。'
+    },
     tags: {
       subscriptionToApi: '订阅转 API',
       stickySession: '会话保持',
