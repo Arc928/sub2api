@@ -1,6 +1,13 @@
-/* Sub2API Interactive Tour Styles - DOM Restructured Version */
+/* Sub2API Interactive Tour Styles — OpenCode design system
+   规范要点：等宽字体贯穿、暖白 canvas/近黑 ink、4px 圆角仅用于交互元素、
+   无阴影无渐变、hairline 1px 分隔线、ASCII 括号符号作为图标。
+   调色板取自 DESIGN-opencode.ai.md：
+   ink #201d1d / charcoal #302c2c / body #424245 / mute #646262 / ash #9a9898
+   canvas #fdfcfc / surface-soft #f8f7f7 / surface-card #f1eeee
+   hairline rgba(15,0,0,0.12) / hairline-strong #646262
+   深色面：surface-dark #201d1d / surface-dark-elevated #302c2c / on-dark #fdfcfc / on-dark-mute #9a9898 */
 
-/* 1. Overlay & Highlight */
+/* ========== 1. Overlay & Highlight ========== */
 .driver-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -19,54 +26,70 @@
   pointer-events: none !important;
 }
 
+/* 高亮描边：hairline-strong 级别的墨线，无阴影 */
 .driver-active-element {
   position: relative !important;
   z-index: 99999999 !important;
-  outline: 4px solid rgba(32, 29, 29, 0.25) !important;
+  outline: 2px solid rgba(15, 0, 0, 0.45) !important;
+  outline-offset: 2px !important;
   border-radius: 4px !important;
 }
+.dark .driver-active-element {
+  outline-color: rgba(253, 252, 252, 0.55) !important;
+}
 
-/* 2. Popover Container */
+/* ========== 2. Popover Container ==========
+   深色模式下弹窗即规范中的 "dark surface"：surface-dark 填充，
+   提升靠颜色而非阴影（规范：no drop shadows）。 */
 .driver-popover.theme-tour-popover {
   position: fixed !important;
   z-index: 100000000 !important;
-  background-color: #ffffff !important;
-  border: 1px solid rgba(15, 0, 0, 0.12) !important;
+  background-color: #fdfcfc !important; /* canvas */
+  border: 1px solid rgba(15, 0, 0, 0.12) !important; /* hairline */
   box-shadow: none !important;
   border-radius: 4px !important;
   padding: 0 !important;
-  max-width: min(440px, 90vw) !important; /* Responsive on small screens */
-  color: #201d1d !important;
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  max-width: min(440px, 90vw) !important;
+  color: #201d1d !important; /* ink */
+  /* Berkeley Mono 替代栈（规范 Note on Font Substitutes），中文用系统等宽/无衬线兜底 */
+  font-family: 'Berkeley Mono', 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', monospace !important;
   overflow: hidden !important;
 }
 
 .dark .driver-popover.theme-tour-popover {
-  background-color: #302c2c !important;
-  border-color: #4a4545 !important;
-  color: #f3f4f6 !important;
+  background-color: #201d1d !important; /* surface-dark */
+  border-color: #302c2c !important; /* surface-dark-elevated 作 hairline */
+  color: #fdfcfc !important; /* on-dark */
 }
 
-/* 3. Header Area */
+/* ========== 3. Header Area ========== */
 .theme-tour-popover .driver-popover-title {
   display: flex !important;
   align-items: center !important;
-  padding: 20px 24px 12px 24px !important; 
+  padding: 20px 24px 12px 24px !important;
   margin: 0 !important;
   background-color: transparent !important;
   position: relative !important;
 }
 
+/* heading-md: 700 粗，行高 1.5 */
 .driver-popover-title-text {
-  font-size: 18px !important;
+  font-size: 16px !important;
   font-weight: 700 !important;
-  color: #111827 !important;
-  line-height: 1.3 !important;
-  padding-right: 100px !important; /* Ensure title doesn't overlap Skip/Close */
+  color: #201d1d !important; /* ink */
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+  padding-right: 100px !important;
 }
-.dark .driver-popover-title-text { color: #ffffff !important; }
+.dark .driver-popover-title-text { color: #fdfcfc !important; }
+/* driver.js 标题节点实际带有 driver-popover-title 类，暗色下同样需要 on-dark */
+.dark .theme-tour-popover .driver-popover-title,
+.dark .theme-tour-popover .driver-popover-title * {
+  color: #fdfcfc !important;
+}
 
-/* Close Button */
+/* Close Button — 交互元素 4px 圆角，mute 色 */
 .theme-tour-popover .driver-popover-close-btn {
   position: absolute !important;
   top: 18px !important;
@@ -74,7 +97,7 @@
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
-  color: #9ca3af !important;
+  color: #646262 !important; /* mute */
   background-color: transparent !important;
   border: none !important;
   z-index: 20 !important;
@@ -83,34 +106,66 @@
   align-items: center !important;
   justify-content: center !important;
 }
-.theme-tour-popover .driver-popover-close-btn:hover { background-color: #f3f4f6 !important; color: #4b5563 !important; }
-.dark .theme-tour-popover .driver-popover-close-btn:hover { background-color: #3a3535 !important; }
+.theme-tour-popover .driver-popover-close-btn:hover { background-color: #f1eeee !important; color: #201d1d !important; }
+.dark .theme-tour-popover .driver-popover-close-btn { color: #9a9898 !important; } /* on-dark-mute */
+.dark .theme-tour-popover .driver-popover-close-btn:hover { background-color: #302c2c !important; color: #fdfcfc !important; }
 
-/* 4. Body Content */
+/* ========== 4. Body Content ==========
+   body-md: 400，行高 1.5 */
 .theme-tour-popover .driver-popover-description {
   display: block !important;
   font-size: 14px !important;
   font-weight: 400 !important;
-  color: #4b5563 !important;
+  color: #424245 !important; /* body */
   padding: 0 24px 24px 24px !important;
   margin: 0 !important;
-  line-height: 1.6 !important;
+  line-height: 1.5 !important;
   background-color: transparent !important;
 }
-.dark .theme-tour-popover .driver-popover-description { color: #cbd5e1 !important; }
+.dark .theme-tour-popover .driver-popover-description { color: #d8d5d5 !important; }
 
-/* 5. Footer Area - Flex Row with Left/Right Containers */
+/* driver.js 默认会给 .driver-popover * 设置 Helvetica Neue 字体，
+   覆盖掉我们的字体栈；这里统一恢复（规范：单一等宽字体贯穿所有文本角色） */
+.theme-tour-popover .driver-popover-title,
+.theme-tour-popover .driver-popover-description,
+.theme-tour-popover .driver-popover-footer,
+.theme-tour-popover .driver-popover-footer * {
+  font-family: 'Berkeley Mono', 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', monospace !important;
+}
+
+/* 提高暗色模式下引导弹窗内嵌套元素的可读性：
+   i18n 文案中带内联 style 的浅色提示框在暗色下会非常刺眼，
+   这里统一覆盖为 surface-dark-elevated 半透明 + 继承文字色 */
+.dark .theme-tour-popover .driver-popover-description [style*="background"] {
+  background-color: rgba(48, 44, 44, 0.6) !important; /* surface-dark-elevated 半透明 */
+  color: #d8d5d5 !important;
+}
+.dark .theme-tour-popover .driver-popover-description [style*="color: #6b7280"],
+.dark .theme-tour-popover .driver-popover-description [style*="color:#6b7280"] {
+  color: #9a9898 !important; /* on-dark-mute */
+}
+.dark .theme-tour-popover .driver-popover-description [style*="color: #10b981"],
+.dark .theme-tour-popover .driver-popover-description [style*="color:#10b981"] {
+  color: #30d158 !important; /* success（规范语义色） */
+}
+
+/* 交互步骤提示（按 Enter 或点击继续） */
+.dark .driver-popover-description-hint { color: #9a9898 !important; }
+
+/* ========== 5. Footer Area ==========
+   规范：分区仅用 1px hairline 分隔，无阴影 */
 .theme-tour-popover .driver-popover-footer {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important; /* Push Left and Right apart */
+  justify-content: space-between !important;
   padding: 16px 24px !important;
-  background-color: #f9fafb !important;
-  border-top: 1px solid #f3f4f6 !important;
+  background-color: #f8f7f7 !important; /* surface-soft */
+  border-top: 1px solid rgba(15, 0, 0, 0.12) !important; /* hairline */
   margin: 0 !important;
 }
 .dark .theme-tour-popover .driver-popover-footer {
-  background-color: #201d1d !important;
+  background-color: #201d1d !important; /* 与弹窗同 surface-dark，仅靠 hairline 分隔 */
   border-top-color: #302c2c !important;
 }
 
@@ -128,103 +183,143 @@
   gap: 8px !important;
 }
 
-/* Progress */
+/* Progress — caption-md，mute 色 */
 .theme-tour-popover .driver-popover-progress-text {
   font-size: 13px !important;
-  color: #6b7280 !important;
+  color: #646262 !important; /* mute */
   margin: 0 !important;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
   white-space: nowrap !important;
 }
-.dark .theme-tour-popover .driver-popover-progress-text { color: #9ca3af !important; }
+.dark .theme-tour-popover .driver-popover-progress-text { color: #9a9898 !important; } /* on-dark-mute */
 
-/* Shortcuts (Divider + Keys) */
+/* Shortcuts (Divider + Keys) — 分隔用 hairline */
 .footer-shortcuts {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
   padding-left: 16px !important;
-  border-left: 1px solid #e5e7eb !important;
+  border-left: 1px solid rgba(15, 0, 0, 0.12) !important;
   height: 20px !important;
 }
-.dark .footer-shortcuts { border-left-color: #3a3535 !important; }
+.dark .footer-shortcuts { border-left-color: #302c2c !important; }
 
 .shortcut-item {
   display: flex !important;
   align-items: center !important;
   gap: 4px !important;
   font-size: 12px !important;
-  color: #6b7280 !important;
+  color: #646262 !important; /* mute */
   white-space: nowrap !important;
 }
-.dark .shortcut-item { color: #94a3b8 !important; }
+.dark .shortcut-item { color: #9a9898 !important; } /* on-dark-mute */
 
+/* kbd 键帽：surface-card 底 + hairline 边，无阴影 */
 .shortcut-item kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace !important;
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
+  font-family: inherit !important;
+  background-color: #f1eeee !important; /* surface-card */
+  border: 1px solid rgba(15, 0, 0, 0.12) !important;
   border-radius: 4px !important;
   padding: 1px 6px !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #4b5563 !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.05) !important;
+  font-weight: 500 !important;
+  color: #424245 !important; /* body */
+  box-shadow: none !important; /* 规范：无阴影 */
   min-width: 20px !important;
   text-align: center !important;
   display: inline-block !important;
 }
 .dark .shortcut-item kbd {
-  background-color: #302c2c !important;
-  border-color: #475569 !important;
-  color: #cbd5e1 !important;
+  background-color: #302c2c !important; /* surface-dark-elevated */
+  border-color: #4a4545 !important;
+  color: #d8d5d5 !important;
 }
 
-/* Nav Buttons */
+/* ========== 6. Nav Buttons ==========
+   button-md: 500 粗，行高 2（规范：按钮标签用高行高让文字在 4px 矩形内从容） */
 .theme-tour-popover button {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 8px 16px !important;
-  font-size: 13px !important;
+  padding: 4px 20px !important;
+  min-height: 36px !important;
+  font-size: 14px !important;
   font-weight: 500 !important;
-  text-shadow: none !important;
-  border-radius: 6px !important;
+  border-radius: 4px !important; /* rounded.sm — 交互元素统一 4px */
   cursor: pointer !important;
-  transition: all 0.2s !important;
+  transition: background-color 0.15s ease !important;
   border: 1px solid transparent !important;
-  line-height: 1.2 !important;
-  white-space: nowrap !important; /* Force no wrap */
+  line-height: 2 !important;
+  white-space: nowrap !important;
+  /* driver.js 默认给按钮加 text-shadow:1px 1px 0 #fff，深底下会显示成重影/发虚 */
+  text-shadow: none !important;
+  font-family: inherit !important;
 }
 
+/* button-primary：ink 底 + on-primary 字 */
 .theme-tour-popover .driver-popover-next-btn {
-  background-color: #201d1d !important;
-  color: #fdfcfc !important;
-  border-radius: 4px !important;
+  background-color: #201d1d !important; /* primary/ink */
+  color: #fdfcfc !important; /* on-primary */
   box-shadow: none !important;
 }
-.theme-tour-popover .driver-popover-next-btn:hover { background-color: #302c2c !important; }
+.theme-tour-popover .driver-popover-next-btn:hover { background-color: #0f0000 !important; } /* ink-deep */
 
+/* 深色下弹窗背景就是 ink #201d1d，主按钮同色会隐形，
+   按规范用 surface-dark-elevated 面 + on-dark 描边区分（规范：深色面提升靠颜色而非阴影） */
+.dark .theme-tour-popover .driver-popover-next-btn {
+  background-color: #302c2c !important; /* surface-dark-elevated */
+  border: 1px solid #646262 !important; /* hairline-strong */
+  color: #fdfcfc !important;
+}
+.dark .theme-tour-popover .driver-popover-next-btn:hover {
+  background-color: #3d3838 !important;
+  border-color: #9a9898 !important;
+}
+
+/* button-secondary：canvas 底 + hairline-strong 边 */
 .theme-tour-popover .driver-popover-prev-btn {
-  background-color: white !important;
-  color: #6b7280 !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  background-color: #fdfcfc !important; /* canvas */
+  color: #201d1d !important; /* ink */
+  border: 1px solid #646262 !important; /* hairline-strong */
+  box-shadow: none !important;
 }
-.theme-tour-popover .driver-popover-prev-btn:hover { background-color: #f9fafb !important; color: #374151 !important; }
-.dark .theme-tour-popover .driver-popover-prev-btn { 
-  background-color: #302c2c !important; 
-  border-color: #475569 !important; 
-  color: #9ca3af !important; 
+.theme-tour-popover .driver-popover-prev-btn:hover { background-color: #f8f7f7 !important; }
+.dark .theme-tour-popover .driver-popover-prev-btn {
+  background-color: transparent !important;
+  border-color: #646262 !important;
+  color: #fdfcfc !important;
+}
+.dark .theme-tour-popover .driver-popover-prev-btn:hover {
+  background-color: #302c2c !important;
 }
 
-/* Arrows */
+/* 欢迎步（第1步）没有"上一步"，driver.js 会把 prev 渲染成禁用态显示成"跳过"，
+   与主按钮并排像一个"死按钮"。按布局一致性，第一步直接隐藏 prev，
+   退出引导可用右上角 × 或 ESC。 */
+.theme-tour-popover .driver-popover-prev-btn.driver-popover-btn-disabled {
+  display: none !important;
+}
+
+/* 规范 button-disabled：surface-card 底 + ash 字（防御其它步骤出现禁用态时统一观感） */
+.theme-tour-popover button.driver-popover-btn-disabled {
+  background-color: #f1eeee !important;
+  color: #9a9898 !important;
+  border-color: transparent !important;
+  opacity: 1 !important;
+}
+.dark .theme-tour-popover button.driver-popover-btn-disabled {
+  background-color: #302c2c !important;
+  color: #646262 !important;
+}
+
+/* ========== 7. Arrows ========== */
 .driver-popover-arrow { z-index: 100000001 !important; }
-.driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #ffffff !important; }
-.driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #ffffff !important; }
-.driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #ffffff !important; }
-.driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #ffffff !important; }
+.driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #fdfcfc !important; }
+.driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #fdfcfc !important; }
+.driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #fdfcfc !important; }
+.driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #fdfcfc !important; }
 
-.dark .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #302c2c !important; }
-.dark .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #302c2c !important; }
-.dark .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #302c2c !important; }
-.dark .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #302c2c !important; }
+.dark .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #201d1d !important; }
+.dark .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #201d1d !important; }
+.dark .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #201d1d !important; }
+.dark .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #201d1d !important; }
