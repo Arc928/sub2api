@@ -1,0 +1,24 @@
+# =============================================================================
+# Sub2API Docker Compose - Build From Source Overlay
+# =============================================================================
+# 叠加在 docker-compose.local.yml 之上，让 compose 从本仓库源码构建镜像，
+# 替代上游发布的 weishaw/sub2api:latest。
+#
+# 用法：
+#   docker compose -f docker-compose.local.yml -f docker-compose.build.yml up -d --build
+#
+# 在 .env 里设置 COMPOSE_FILE 后可省略 -f 参数：
+#   COMPOSE_FILE=docker-compose.local.yml:docker-compose.build.yml
+#
+# 带上真实 commit（可选，不带则标记为 docker）：
+#   COMMIT=$(git rev-parse --short HEAD) docker compose up -d --build
+# =============================================================================
+
+services:
+  sub2api:
+    image: sub2api:local
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        COMMIT: ${COMMIT:-docker}
