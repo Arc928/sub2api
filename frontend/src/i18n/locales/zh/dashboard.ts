@@ -607,12 +607,26 @@ export default {
   modelPlaza: {
     title: '模型广场',
     description: '按分组浏览可用模型与价格',
+    catalogKicker: '公开目录 / 实时价格',
     loading: '加载中...',
     empty: '暂无可展示的分组',
     loadFailed: '加载模型广场失败',
     noSearchResult: '没有匹配的模型',
     anonymousHint: '登录后可查看你的专属分组与专属倍率',
+    summary: {
+      label: '目录概览',
+      groups: '公开分组',
+      groupsNote: '当前可浏览的价格目录',
+      models: '可用模型',
+      modelsNote: '来自分组与渠道配置',
+      current: '当前分组模型',
+      currentNote: '切换分组后自动更新',
+      platforms: '接入平台',
+      platformsNote: '当前目录覆盖的平台'
+    },
     filters: {
+      catalogLabel: '平台 / 分组',
+      catalogMeta: '{platforms} 个平台 · {groups} 个分组',
       platformLabel: '平台',
       groupLabel: '分组',
       rateLabel: '倍率',
@@ -627,6 +641,7 @@ export default {
     detail: {
       noModels: '该分组暂未配置模型',
       noPricing: '未配置定价',
+      modelCount: '共 {count} 个模型 · 当前目录价格',
       peakNote: '高峰时段 {window} 计费倍率 ×{multiplier}',
       longContextDisabledNote: '该分组未启用长上下文阶梯计费，超阈值请求仍按基础档计费，官方阶梯仅供参考'
     },

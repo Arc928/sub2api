@@ -602,12 +602,26 @@ export default {
   modelPlaza: {
     title: 'Model Plaza',
     description: 'Browse available models and pricing by group',
+    catalogKicker: 'Public catalog / live pricing',
     loading: 'Loading...',
     empty: 'No groups to display',
     loadFailed: 'Failed to load model plaza',
     noSearchResult: 'No matching models',
     anonymousHint: 'Sign in to see your exclusive groups and personal rates',
+    summary: {
+      label: 'Catalog overview',
+      groups: 'Public groups',
+      groupsNote: 'Pricing catalogs available now',
+      models: 'Available models',
+      modelsNote: 'From group and channel settings',
+      current: 'Models in this group',
+      currentNote: 'Updates when the group changes',
+      platforms: 'Platforms',
+      platformsNote: 'Platforms covered by this catalog'
+    },
     filters: {
+      catalogLabel: 'Platforms / groups',
+      catalogMeta: '{platforms} platforms · {groups} groups',
       platformLabel: 'Platform',
       groupLabel: 'Group',
       rateLabel: 'Rate',
@@ -622,6 +636,7 @@ export default {
     detail: {
       noModels: 'No models configured for this group',
       noPricing: 'Pricing not configured',
+      modelCount: '{count} models · current catalog pricing',
       peakNote: 'Peak hours {window}: billing rate ×{multiplier}',
       longContextDisabledNote: 'Long-context tier pricing is disabled for this group: requests above the threshold are billed at the base tier; official tiers are for reference only'
     },

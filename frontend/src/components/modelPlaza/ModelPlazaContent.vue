@@ -1,10 +1,17 @@
 <template>
-  <div class="space-y-5">
-    <!-- 页头(独立形态下展示标题;后台形态 AppHeader 已有页面标题) -->
-    <div v-if="!embedded">
-      <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ t('modelPlaza.title') }}</h1>
-      <p class="mt-1.5 text-sm text-gray-500 dark:text-dark-400">{{ t('modelPlaza.description') }}</p>
-    </div>
+  <div class="space-y-7">
+    <!-- 目录页头:独立页与后台内嵌形态保持相同的信息入口。 -->
+    <header class="border-y border-gray-300 py-6 dark:border-dark-600 sm:py-8">
+      <p class="text-xs font-bold uppercase text-gray-500 dark:text-dark-300">
+        [ {{ t('modelPlaza.catalogKicker') }} ]
+      </p>
+      <h1 class="mt-3 text-2xl font-bold text-gray-950 dark:text-white sm:text-3xl">
+        {{ t('modelPlaza.title') }}
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-600 dark:text-dark-200">
+        {{ t('modelPlaza.description') }}
+      </p>
+    </header>
 
     <!-- 全局价格说明(管理员配置,Markdown) -->
     <div
@@ -33,22 +40,41 @@
       {{ t('modelPlaza.loadFailed') }}
     </div>
     <template v-else>
-      <!-- 筛选区:平台 → 分组 → 倍率 -->
+      <!-- 与参考目录一致的四项概览,数值完全来自当前接口响应。 -->
+      <section
+        class="grid grid-cols-2 border-l border-t border-gray-300 dark:border-dark-600 lg:grid-cols-4"
+        :aria-label="t('modelPlaza.summary.label')"
+      >
+        <article
+          v-for="item in summaryItems"
+          :key="item.label"
+          class="min-w-0 border-b border-r border-gray-300 bg-white p-4 dark:border-dark-600 dark:bg-dark-900 sm:p-5"
+        >
+          <p class="text-[11px] font-bold uppercase leading-5 text-gray-500 dark:text-dark-300">
+            {{ item.label }}
+          </p>
+          <strong class="mt-2 block truncate text-2xl font-bold text-gray-950 dark:text-white">
+            {{ item.value }}
+          </strong>
+          <p class="mt-1 text-xs leading-5 text-gray-500 dark:text-dark-300">
+            {{ item.note }}
+          </p>
+        </article>
+      </section>
+
+      <!-- 平台分栏目录 + 倍率与模型名筛选。 -->
       <PlazaFilterBar
-        :platforms="platforms"
         :groups="groupOptions"
         :rates="rates"
-        :platform="selectedPlatform"
         :group-id="selectedGroupId"
         :rate="selectedRate"
         :search="searchQuery"
-        @update:platform="selectedPlatform = $event"
-        @update:group-id="selectedGroupId = $event"
-        @update:rate="selectedRate = $event"
+        @update:group-id="selectGroup"
+        @update:rate="selectRate"
         @update:search="searchQuery = $event"
       />
 
-      <!-- 分组分节的模型清单(默认按生效倍率升序) -->
+      <!-- 目录一次聚焦一个分组,避免在长列表中反复寻找价格上下文。 -->
       <div v-if="filteredGroups.length > 0" class="space-y-5">
         <PlazaGroupSection v-for="g in filteredGroups" :key="g.id" :group="g" />
       </div>
@@ -77,7 +103,7 @@ const props = defineProps<{
   response: ModelPlazaResponse | null
   loading: boolean
   error?: boolean
-  /** 后台内嵌形态(AppLayout 内):隐藏页头。 */
+  /** 后台内嵌形态标记,保留供调用方兼容。 */
   embedded?: boolean
 }>()
 
@@ -85,7 +111,6 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 
-const selectedPlatform = ref<string>('all')
 const selectedGroupId = ref<number | 'all'>('all')
 const selectedRate = ref<number | 'all'>('all')
 const searchQuery = ref('')
@@ -103,12 +128,14 @@ function effectiveRate(g: ModelPlazaGroup): number {
   return g.user_rate_multiplier ?? g.rate_multiplier
 }
 
+const allGroups = computed(() => props.response?.groups ?? [])
+
 const platforms = computed(() =>
-  [...new Set((props.response?.groups ?? []).map((g) => g.platform).filter(Boolean))].sort()
+  [...new Set(allGroups.value.map((g) => g.platform).filter(Boolean))].sort()
 )
 
 const groupOptions = computed(() =>
-  (props.response?.groups ?? []).map((g) => ({
+  allGroups.value.map((g) => ({
     id: g.id,
     name: g.name,
     platform: g.platform,
@@ -118,38 +145,82 @@ const groupOptions = computed(() =>
 
 /** 全量生效倍率;当前组合下不可用的项由 FilterBar 置灰而非隐藏。 */
 const rates = computed(() =>
-  [...new Set((props.response?.groups ?? []).map(effectiveRate))].sort((a, b) => a - b)
+  [...new Set(allGroups.value.map(effectiveRate))].sort((a, b) => a - b)
 )
 
-/** 数据刷新后选中的倍率可能不复存在,重置为全部。 */
-watch(rates, (list) => {
-  if (selectedRate.value !== 'all' && !list.includes(selectedRate.value)) {
-    selectedRate.value = 'all'
-  }
+/** 接口返回后默认聚焦第一项;刷新时尽量保留仍存在的当前分组。 */
+watch(
+  allGroups,
+  (groups) => {
+    if (groups.length === 0) {
+      selectedGroupId.value = 'all'
+      return
+    }
+    if (selectedGroupId.value === 'all' || !groups.some((g) => g.id === selectedGroupId.value)) {
+      selectedGroupId.value = groups[0].id
+    }
+    if (selectedRate.value !== 'all' && !rates.value.includes(selectedRate.value)) {
+      selectedRate.value = 'all'
+    }
+  },
+  { immediate: true }
+)
+
+const activeGroup = computed(() => {
+  const candidates = selectedRate.value === 'all'
+    ? allGroups.value
+    : allGroups.value.filter((g) => effectiveRate(g) === selectedRate.value)
+  return candidates.find((g) => g.id === selectedGroupId.value) ?? candidates[0] ?? null
 })
 
+const totalModels = computed(() =>
+  allGroups.value.reduce((count, group) => count + group.models.length, 0)
+)
+
+const summaryItems = computed(() => [
+  {
+    label: t('modelPlaza.summary.groups'),
+    value: allGroups.value.length,
+    note: t('modelPlaza.summary.groupsNote')
+  },
+  {
+    label: t('modelPlaza.summary.models'),
+    value: totalModels.value,
+    note: t('modelPlaza.summary.modelsNote')
+  },
+  {
+    label: t('modelPlaza.summary.current'),
+    value: activeGroup.value?.models.length ?? 0,
+    note: t('modelPlaza.summary.currentNote')
+  },
+  {
+    label: t('modelPlaza.summary.platforms'),
+    value: platforms.value.length,
+    note: t('modelPlaza.summary.platformsNote')
+  }
+])
+
+function selectGroup(id: number | 'all') {
+  selectedGroupId.value = id
+}
+
+function selectRate(rate: number | 'all') {
+  selectedRate.value = rate
+  if (rate === 'all') return
+  const current = allGroups.value.find((g) => g.id === selectedGroupId.value)
+  if (!current || effectiveRate(current) !== rate) {
+    selectedGroupId.value = allGroups.value.find((g) => effectiveRate(g) === rate)?.id ?? 'all'
+  }
+}
+
 const filteredGroups = computed(() => {
-  let groups = props.response?.groups ?? []
-  if (selectedPlatform.value !== 'all') {
-    groups = groups.filter((g) => g.platform === selectedPlatform.value)
-  }
-  if (selectedGroupId.value !== 'all') {
-    groups = groups.filter((g) => g.id === selectedGroupId.value)
-  }
-  if (selectedRate.value !== 'all') {
-    groups = groups.filter((g) => effectiveRate(g) === selectedRate.value)
-  }
-  // 模型名搜索:分组内只留命中的模型,整组无命中则隐藏该分组。
+  const group = activeGroup.value
+  if (!group) return []
+  // 模型名搜索只过滤当前目录,切换分组后搜索词保持不变。
   const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    groups = groups
-      .map((g) => ({ ...g, models: g.models.filter((m) => m.name.toLowerCase().includes(q)) }))
-      .filter((g) => g.models.length > 0)
-  }
-  // 专属倍率会改变生效值,不能只依赖后端按默认倍率的排序。
-  return [...groups].sort(
-    (a, b) => effectiveRate(a) - effectiveRate(b) || a.name.localeCompare(b.name)
-  )
+  if (!q) return [group]
+  const models = group.models.filter((m) => m.name.toLowerCase().includes(q))
+  return models.length > 0 ? [{ ...group, models }] : []
 })
 </script>
 

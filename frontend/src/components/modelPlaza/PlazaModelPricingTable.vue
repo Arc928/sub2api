@@ -1,7 +1,7 @@
 <template>
-  <div class="plaza-pricing-table overflow-x-auto" :style="accentStyle">
-    <table class="w-full min-w-[1000px] table-auto border-collapse text-sm tabular-nums">
-      <colgroup>
+  <div class="plaza-pricing-table" :style="accentStyle">
+    <table class="block w-full text-sm tabular-nums">
+      <colgroup class="hidden">
         <col class="w-[25%]" />
         <col class="w-[11%]" />
         <col class="w-[9%]" />
@@ -11,7 +11,7 @@
         <col class="w-[14%]" />
         <col class="w-[8%]" />
       </colgroup>
-      <thead>
+      <thead class="sr-only">
         <tr
           class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400"
         >
@@ -56,16 +56,17 @@
           <th class="px-3 py-2 font-medium">{{ t('modelPlaza.table.cache') }}</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="model-card-grid">
         <tr
           v-for="{ model: m, period, key } in rows"
           :key="key"
-          class="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50/70 dark:border-dark-800 dark:hover:bg-dark-800/50"
+          class="model-card"
+          :class="{ 'is-request-card': billingMode(m) !== BILLING_MODE_TOKEN }"
         >
           <!-- 模型名 + 非 token 计费模式徽章;分时时段行额外标注时段 -->
-          <td class="border-r border-gray-100 py-2.5 pl-5 pr-4 align-middle dark:border-dark-700/60">
+          <td class="model-card-head">
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="font-medium text-gray-900 dark:text-white">{{ m.name }}</span>
+              <span class="min-w-0 break-all font-medium text-gray-900 dark:text-white">{{ m.name }}</span>
               <!-- 时段徽章紧跟模型名,其余徽章排在后面,空间不足时先换行的是它们 -->
               <span
                 v-if="period"
@@ -111,7 +112,10 @@
 
           <!-- token 计费:输入 / 输出 / 缓存(写/读),有阶梯时每档一行;档位标签只放输入列,其余列按行对齐 -->
           <template v-if="billingMode(m) === BILLING_MODE_TOKEN">
-            <td class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50">
+            <td
+              class="pz-cell paid-cell paid-input font-mono font-semibold text-gray-900 dark:text-gray-50"
+              :data-label="t('modelPlaza.table.input')"
+            >
               <template v-if="tokenIntervals(m).length">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
@@ -124,7 +128,10 @@
               </template>
               <template v-else>{{ paidPerMillion(m.pricing?.input_price, period) }}</template>
             </td>
-            <td class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50">
+            <td
+              class="pz-cell paid-cell paid-output font-mono font-semibold text-gray-900 dark:text-gray-50"
+              :data-label="t('modelPlaza.table.output')"
+            >
               <template v-if="tokenIntervals(m).length">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
@@ -137,7 +144,10 @@
               </template>
               <template v-else>{{ paidPerMillion(m.pricing?.output_price, period) }}</template>
             </td>
-            <td class="pz-cell px-3 py-2.5 align-middle">
+            <td
+              class="pz-cell paid-cell paid-cache"
+              :data-label="t('modelPlaza.table.cache')"
+            >
               <template v-if="hasTierCachePricing(tokenIntervals(m))">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
@@ -181,7 +191,11 @@
 
           <!-- 按次 / 按图片计费:实付区整体合并,阶梯芯片或单一按次价 -->
           <template v-else>
-            <td colspan="3" class="pz-cell px-3 py-2.5 align-middle">
+            <td
+              colspan="3"
+              class="pz-cell paid-cell paid-request"
+              :data-label="billingModeLabel(m)"
+            >
               <div
                 v-if="requestIntervals(m).length"
                 class="flex flex-wrap items-center gap-1.5"
@@ -208,7 +222,8 @@
 
           <!-- 官方价格(参考价,不乘倍率;官方有阶梯时每档一行) -->
           <td
-            class="border-l border-gray-100 px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:border-dark-700/60 dark:text-dark-400"
+            class="official-cell official-input font-mono text-xs text-gray-500 dark:text-dark-300"
+            :data-label="officialLabel(t('modelPlaza.table.input'))"
           >
             <template v-if="officialIntervals(m).length">
               <div
@@ -222,7 +237,10 @@
             </template>
             <template v-else>{{ official(m.official_pricing?.input_price) }}</template>
           </td>
-          <td class="px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:text-dark-400">
+          <td
+            class="official-cell official-output font-mono text-xs text-gray-500 dark:text-dark-300"
+            :data-label="officialLabel(t('modelPlaza.table.output'))"
+          >
             <template v-if="officialIntervals(m).length">
               <div
                 v-for="(iv, idx) in officialIntervals(m)"
@@ -235,7 +253,10 @@
             </template>
             <template v-else>{{ official(m.official_pricing?.output_price) }}</template>
           </td>
-          <td class="px-3 py-2.5 align-middle">
+          <td
+            class="official-cell official-cache"
+            :data-label="officialLabel(t('modelPlaza.table.cache'))"
+          >
             <template v-if="hasTierCachePricing(officialIntervals(m))">
               <div
                 v-for="(iv, idx) in officialIntervals(m)"
@@ -278,7 +299,8 @@
 
           <!-- 折扣倍率(分时时段行展示 生效倍率×时段倍率;生图独立倍率行展示独立倍率;专属倍率划线展示原倍率) -->
           <td
-            class="border-l border-gray-100 py-2.5 pl-3 pr-5 text-right align-middle font-mono text-xs dark:border-dark-700/60"
+            class="model-rate-cell font-mono text-xs"
+            :data-label="t('modelPlaza.table.rate')"
           >
             <span
               v-if="period"
@@ -441,6 +463,10 @@ function perUnitSuffix(m: PlazaModel): string {
     : t('modelPlaza.table.perUnitRequest')
 }
 
+function officialLabel(kind: string): string {
+  return `${t('modelPlaza.table.officialPrice')} / ${kind}`
+}
+
 function hasCachePricing(m: PlazaModel): boolean {
   return m.pricing?.cache_write_price != null || m.pricing?.cache_write_1h_price != null || m.pricing?.cache_read_price != null
 }
@@ -536,17 +562,100 @@ function trimZero(n: number): string {
 </script>
 
 <style scoped>
-/* 实付分区配色统一从 --plaza-accent(平台主色)派生,新增平台无需扩展样式 */
+/* 卡片保留少量平台色作为实付区提示,结构与整体视觉仍遵循单色细边框系统。 */
 .plaza-pricing-table {
   --pz-title: color-mix(in srgb, var(--plaza-accent) 88%, black);
-  --pz-bg: color-mix(in srgb, var(--plaza-accent) 7%, transparent);
-  --pz-bg-hover: color-mix(in srgb, var(--plaza-accent) 13%, transparent);
+  --pz-bg: color-mix(in srgb, var(--plaza-accent) 4%, transparent);
+  --pz-bg-hover: color-mix(in srgb, var(--plaza-accent) 7%, transparent);
 }
 
 .dark .plaza-pricing-table {
   --pz-title: color-mix(in srgb, var(--plaza-accent) 70%, white);
-  --pz-bg: color-mix(in srgb, var(--plaza-accent) 6%, transparent);
-  --pz-bg-hover: color-mix(in srgb, var(--plaza-accent) 10%, transparent);
+  --pz-bg: color-mix(in srgb, var(--plaza-accent) 4%, transparent);
+  --pz-bg-hover: color-mix(in srgb, var(--plaza-accent) 8%, transparent);
+}
+
+.model-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.model-card {
+  @apply relative grid min-w-0 overflow-hidden border border-gray-300 bg-white transition-colors hover:border-gray-600 dark:border-dark-600 dark:bg-dark-900 dark:hover:border-dark-300;
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.55fr);
+  grid-template-rows: auto repeat(3, minmax(3.75rem, auto));
+}
+
+.model-card-head {
+  @apply min-w-0 border-b border-gray-300 bg-gray-100 py-3 pl-4 pr-24 align-middle dark:border-dark-600 dark:bg-dark-800;
+  display: block;
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.paid-cell,
+.official-cell {
+  @apply min-w-0 border-t border-gray-200 px-4 py-3 align-middle dark:border-dark-700;
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.paid-cell::before,
+.official-cell::before {
+  content: attr(data-label);
+  @apply mb-1 block text-[10px] font-bold uppercase leading-4 text-gray-500 dark:text-dark-300;
+}
+
+.official-cell {
+  @apply border-l border-gray-300 bg-gray-50 px-3 text-gray-500 dark:border-dark-600 dark:bg-dark-800/50 dark:text-dark-300;
+}
+
+.paid-input,
+.official-input {
+  grid-row: 2;
+}
+
+.paid-output,
+.official-output {
+  grid-row: 3;
+}
+
+.paid-cache,
+.official-cache {
+  grid-row: 4;
+}
+
+.paid-cell {
+  grid-column: 1;
+}
+
+.official-cell {
+  grid-column: 2;
+}
+
+.model-rate-cell {
+  @apply absolute right-3 top-3 rounded-sm border border-gray-300 bg-white px-2 py-1 text-right text-gray-800 dark:border-dark-500 dark:bg-dark-900 dark:text-gray-100;
+  display: block;
+}
+
+.is-request-card {
+  grid-template-rows: auto minmax(5.5rem, auto);
+}
+
+.is-request-card .paid-request {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.is-request-card .official-cell {
+  display: none;
+}
+
+.paid-cell .whitespace-nowrap,
+.official-cell .whitespace-nowrap {
+  white-space: normal;
 }
 
 .pz-bg,
@@ -558,7 +667,7 @@ function trimZero(n: number): string {
   transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-tbody tr:hover .pz-cell {
+.model-card:hover .pz-cell {
   background-color: var(--pz-bg-hover);
 }
 
