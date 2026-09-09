@@ -134,6 +134,7 @@ export interface ActionCaptchaRequestProof extends Partial<TencentCaptchaRequest
 }
 
 export interface RegisterRequest {
+  username: string
   email: string
   password: string
   verify_code?: string

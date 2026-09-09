@@ -804,6 +804,7 @@ describe('EmailVerifyView', () => {
     sessionStorage.setItem(
       'register_data',
       JSON.stringify({
+        username: 'Normal User',
         email: 'normal@example.com',
         password: 'secret-456',
         promo_code: 'PROMO',
@@ -829,6 +830,7 @@ describe('EmailVerifyView', () => {
     await flushPromises()
 
     expect(registerMock).toHaveBeenCalledWith({
+      username: 'Normal User',
       email: 'normal@example.com',
       password: 'secret-456',
       verify_code: '654321',
@@ -854,6 +856,7 @@ describe('EmailVerifyView', () => {
     sessionStorage.setItem(
       'register_data',
       JSON.stringify({
+        username: 'Normal User',
         email: 'normal@example.com',
         password: 'secret-456',
         tencent_captcha_ticket: 'send-code-ticket',
@@ -884,6 +887,7 @@ describe('EmailVerifyView', () => {
       tencent_captcha_randstr: '@send-code-rand',
     }))
     expect(JSON.parse(sessionStorage.getItem('register_data') || '{}')).toEqual({
+      username: 'Normal User',
       email: 'normal@example.com',
       password: 'secret-456',
     })

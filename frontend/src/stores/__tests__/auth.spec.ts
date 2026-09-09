@@ -301,7 +301,7 @@ describe('useAuthStore', () => {
       mockRegister.mockRejectedValue(new Error('Register failed'))
 
       await expect(
-        store.register({ email: 'user@example.com', password: 'secret-123' })
+        store.register({ username: 'testuser', email: 'user@example.com', password: 'secret-123' })
       ).rejects.toThrow('Register failed')
 
       expect(store.hasPendingAuthSession).toBe(true)

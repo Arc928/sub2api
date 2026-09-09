@@ -244,6 +244,7 @@ type PendingOAuthCreateAccountResponse = {
 }
 
 const email = ref<string>('')
+const username = ref<string>('')
 const password = ref<string>('')
 const initialTurnstileToken = ref<string>('')
 const initialTencentCaptchaRandstr = ref<string>('')
@@ -331,6 +332,7 @@ onMounted(async () => {
   if (registerDataStr) {
     try {
       const registerData = JSON.parse(registerDataStr)
+      username.value = registerData.username || ''
       email.value = registerData.email || ''
       password.value = registerData.password || ''
       initialTurnstileToken.value =
@@ -720,6 +722,7 @@ async function handleVerify(): Promise<void> {
     } else {
       // Register with verification code
       await authStore.register({
+        username: username.value,
         email: email.value,
         password: password.value,
         verify_code: verifyCode.value.trim(),

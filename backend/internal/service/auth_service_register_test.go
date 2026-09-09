@@ -5,6 +5,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -280,6 +281,37 @@ func TestAuthService_Register_DisabledByDefault(t *testing.T) {
 
 	_, _, err := service.Register(context.Background(), "user@test.com", "password")
 	require.ErrorIs(t, err, ErrRegDisabled)
+}
+
+func TestAuthService_RegisterWithUsername_ValidatesUsername(t *testing.T) {
+	service := newAuthService(&userRepoStub{}, map[string]string{
+		SettingKeyRegistrationEnabled: "true",
+	}, nil, nil)
+
+	_, _, err := service.RegisterWithUsernameAndVerification(
+		context.Background(), "   ", "user@test.com", "password", "", "", "", "",
+	)
+	require.ErrorIs(t, err, ErrUsernameRequired)
+
+	_, _, err = service.RegisterWithUsernameAndVerification(
+		context.Background(), strings.Repeat("名", 101), "user@test.com", "password", "", "", "", "",
+	)
+	require.ErrorIs(t, err, ErrUsernameTooLong)
+}
+
+func TestAuthService_RegisterWithUsername_PersistsTrimmedUsername(t *testing.T) {
+	repo := &userRepoStub{nextID: 42}
+	service := newAuthService(repo, map[string]string{
+		SettingKeyRegistrationEnabled: "true",
+	}, nil, nil)
+
+	_, user, err := service.RegisterWithUsernameAndVerification(
+		context.Background(), "  Alice  ", "alice@test.com", "password", "", "", "", "",
+	)
+	require.NoError(t, err)
+	require.Equal(t, "Alice", user.Username)
+	require.Len(t, repo.created, 1)
+	require.Equal(t, "Alice", repo.created[0].Username)
 }
 
 func TestAuthService_Register_SnapshotsPlatformQuotaDefaults(t *testing.T) {

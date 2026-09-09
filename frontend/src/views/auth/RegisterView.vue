@@ -28,6 +28,31 @@
 
       <!-- Registration Form -->
       <form v-else @submit.prevent="handleRegister" class="space-y-5">
+        <!-- Username Input -->
+        <div>
+          <label for="username" class="input-label">
+            {{ t('auth.usernameLabel') }}
+          </label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <Icon name="user" size="md" class="text-gray-400 dark:text-dark-500" />
+            </div>
+            <input
+              id="username"
+              v-model="formData.username"
+              type="text"
+              required
+              maxlength="100"
+              autofocus
+              autocomplete="username"
+              :disabled="registrationActionDisabled"
+              class="input pl-11"
+              :class="{ 'input-error': errors.username }"
+              :placeholder="t('auth.usernamePlaceholder')"
+            />
+          </div>
+        </div>
+
         <!-- Email Input -->
         <div>
           <label for="email" class="input-label">
@@ -42,7 +67,6 @@
               v-model="formData.email"
               type="email"
               required
-              autofocus
               autocomplete="email"
               :disabled="registrationActionDisabled"
               class="input pl-11"
@@ -75,6 +99,7 @@
             <button
               type="button"
               :disabled="registrationActionDisabled"
+              :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
               @click="showPassword = !showPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
             >
@@ -85,6 +110,39 @@
           <p class="input-hint">
             {{ t('auth.passwordHint') }}
           </p>
+        </div>
+
+        <!-- Confirm Password Input -->
+        <div>
+          <label for="confirm_password" class="input-label">
+            {{ t('auth.confirmPasswordLabel') }}
+          </label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
+            </div>
+            <input
+              id="confirm_password"
+              v-model="formData.confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              required
+              autocomplete="new-password"
+              :disabled="registrationActionDisabled"
+              class="input pl-11 pr-11"
+              :class="{ 'input-error': errors.confirmPassword }"
+              :placeholder="t('auth.confirmPasswordPlaceholder')"
+            />
+            <button
+              type="button"
+              :disabled="registrationActionDisabled"
+              :aria-label="showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')"
+              @click="showConfirmPassword = !showConfirmPassword"
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
+            >
+              <Icon v-if="showConfirmPassword" name="eyeOff" size="md" />
+              <Icon v-else name="eye" size="md" />
+            </button>
+          </div>
         </div>
 
         <!-- Invitation Code Input (Required when enabled) -->
@@ -384,6 +442,7 @@ const isLoading = ref<boolean>(false)
 const settingsLoaded = ref<boolean>(false)
 const errorMessage = ref<string>('')
 const showPassword = ref<boolean>(false)
+const showConfirmPassword = ref<boolean>(false)
 
 // Public settings
 const registrationEnabled = ref<boolean>(true)
@@ -459,23 +518,29 @@ const invitationValidation = reactive({
 let invitationValidateTimeout: ReturnType<typeof setTimeout> | null = null
 
 const formData = reactive({
+  username: '',
   email: '',
   password: '',
+  confirmPassword: '',
   promo_code: '',
   invitation_code: '',
   aff_code: ''
 })
 
 const errors = reactive({
+  username: '',
   email: '',
   password: '',
+  confirmPassword: '',
   turnstile: '',
   invitation_code: ''
 })
 
 const validationToastMessage = computed(() =>
+  errors.username ||
   errors.email ||
   errors.password ||
+  errors.confirmPassword ||
   (invitationValidation.invalid ? invitationValidation.message : '') ||
   errors.invitation_code ||
   (promoValidation.invalid ? promoValidation.message : '') ||
@@ -882,8 +947,10 @@ function buildEmailSuffixNotAllowedMessage(): string {
 
 function validateForm(): boolean {
   // Reset errors
+  errors.username = ''
   errors.email = ''
   errors.password = ''
+  errors.confirmPassword = ''
   errors.turnstile = ''
   errors.invitation_code = ''
 
@@ -895,6 +962,12 @@ function validateForm(): boolean {
       showAgreementModal.value = true
     }
     return false
+  }
+
+  // Username validation
+  if (!formData.username.trim()) {
+    errors.username = t('auth.usernameRequired')
+    isValid = false
   }
 
   // Email validation
@@ -919,6 +992,14 @@ function validateForm(): boolean {
     isValid = false
   } else if (formData.password.length < 6) {
     errors.password = t('auth.passwordMinLength')
+    isValid = false
+  }
+
+  if (!formData.confirmPassword) {
+    errors.confirmPassword = t('auth.confirmPasswordRequired')
+    isValid = false
+  } else if (formData.confirmPassword !== formData.password) {
+    errors.confirmPassword = t('auth.passwordMismatch')
     isValid = false
   }
 
@@ -1006,6 +1087,7 @@ async function handleRegister(): Promise<void> {
       sessionStorage.setItem(
         'register_data',
         JSON.stringify({
+          username: formData.username.trim(),
           email: formData.email,
           password: formData.password,
           turnstile_token:
@@ -1025,6 +1107,7 @@ async function handleRegister(): Promise<void> {
 
     // Otherwise, directly register
     await authStore.register({
+      username: formData.username.trim(),
       email: formData.email,
       password: formData.password,
       turnstile_token:

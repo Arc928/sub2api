@@ -1,4 +1,4 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import RegisterView from '@/views/auth/RegisterView.vue'
 
@@ -81,6 +81,13 @@ function mountRegister() {
   })
 }
 
+async function fillCredentials(wrapper: VueWrapper, email: string) {
+  await wrapper.get('#username').setValue('Alice')
+  await wrapper.get('#email').setValue(email)
+  await wrapper.get('#password').setValue('secret-123')
+  await wrapper.get('#confirm_password').setValue('secret-123')
+}
+
 describe('RegisterView invitation layout', () => {
   beforeEach(() => {
     getPublicSettingsMock.mockReset()
@@ -128,8 +135,7 @@ describe('RegisterView invitation layout', () => {
 
     const wrapper = mountRegister()
     await flushPromises()
-    await wrapper.get('#email').setValue('first@custom.example')
-    await wrapper.get('#password').setValue('secret-123')
+    await fillCredentials(wrapper, 'first@custom.example')
     await wrapper.get('form').trigger('submit.prevent')
     await flushPromises()
 
@@ -153,8 +159,7 @@ describe('RegisterView invitation layout', () => {
 
     const wrapper = mountRegister()
     await flushPromises()
-    await wrapper.get('#email').setValue('second@custom.example')
-    await wrapper.get('#password').setValue('secret-123')
+    await fillCredentials(wrapper, 'second@custom.example')
     await wrapper.get('form').trigger('submit.prevent')
     await flushPromises()
 
@@ -173,8 +178,7 @@ describe('RegisterView invitation layout', () => {
 
     const wrapper = mountRegister()
     await flushPromises()
-    await wrapper.get('#email').setValue('first@custom.example')
-    await wrapper.get('#password').setValue('secret-123')
+    await fillCredentials(wrapper, 'first@custom.example')
     await wrapper.get('form').trigger('submit.prevent')
     await flushPromises()
 
@@ -193,8 +197,7 @@ describe('RegisterView invitation layout', () => {
 
     const wrapper = mountRegister()
     await flushPromises()
-    await wrapper.get('#email').setValue('user@allowed.com')
-    await wrapper.get('#password').setValue('secret-123')
+    await fillCredentials(wrapper, 'user@allowed.com')
     await wrapper.get('form').trigger('submit.prevent')
     await flushPromises()
 
@@ -202,5 +205,43 @@ describe('RegisterView invitation layout', () => {
       expect.objectContaining({ email: 'user@allowed.com' })
     )
     expect(showErrorMock).not.toHaveBeenCalled()
+  })
+
+  it('requires a username and matching password confirmation', async () => {
+    getPublicSettingsMock.mockResolvedValueOnce({
+      ...publicSettings,
+      turnstile_enabled: false
+    })
+
+    const wrapper = mountRegister()
+    await flushPromises()
+    await wrapper.get('#email').setValue('user@example.com')
+    await wrapper.get('#password').setValue('secret-123')
+    await wrapper.get('#confirm_password').setValue('different-password')
+    await wrapper.get('form').trigger('submit.prevent')
+    await flushPromises()
+
+    expect(registerMock).not.toHaveBeenCalled()
+    expect(wrapper.get('#username').classes()).toContain('input-error')
+    expect(wrapper.get('#confirm_password').classes()).toContain('input-error')
+  })
+
+  it('submits the trimmed username without sending password confirmation', async () => {
+    getPublicSettingsMock.mockResolvedValueOnce({
+      ...publicSettings,
+      turnstile_enabled: false
+    })
+
+    const wrapper = mountRegister()
+    await flushPromises()
+    await fillCredentials(wrapper, 'user@example.com')
+    await wrapper.get('#username').setValue('  Alice  ')
+    await wrapper.get('form').trigger('submit.prevent')
+    await flushPromises()
+
+    expect(registerMock).toHaveBeenCalledWith(
+      expect.objectContaining({ username: 'Alice', email: 'user@example.com' })
+    )
+    expect(registerMock.mock.calls[0]?.[0]).not.toHaveProperty('confirmPassword')
   })
 })
