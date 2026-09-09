@@ -54,7 +54,7 @@
       </div>
     </header>
 
-    <!-- 模型价格卡片:保留原有计费计算与阶梯/分时披露。 -->
+    <!-- 模型价格卡片:正文仅保留实付价、原价与倍率。 -->
     <div>
       <PlazaModelPricingTable
         v-if="group.models.length > 0"

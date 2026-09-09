@@ -57,6 +57,46 @@ func TestListPlazaGroups_GroupCentricAggregation(t *testing.T) {
 	require.Equal(t, "claude-sonnet", out[0].Models[1].Name)
 }
 
+func TestListPlazaGroups_FiltersModelsByGroupAllowlist(t *testing.T) {
+	channels := []Channel{
+		plazaPricedChannel(1, "catalog", []int64{10, 20, 30, 40}, PlatformOpenAI,
+			"gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-6-astra"),
+	}
+	groups := []Group{
+		{
+			ID: 10, Name: "exact", Platform: PlatformOpenAI, RateMultiplier: 1,
+			ModelAllowlist: GroupModelAllowlist{Enabled: true, Models: []string{"gpt-5.6-sol", "GPT-6-ASTRA"}},
+		},
+		{
+			ID: 20, Name: "wildcard", Platform: PlatformOpenAI, RateMultiplier: 1,
+			ModelAllowlist: GroupModelAllowlist{Enabled: true, Models: []string{"gpt-5.6-*"}},
+		},
+		{
+			ID: 30, Name: "disabled", Platform: PlatformOpenAI, RateMultiplier: 1,
+			ModelAllowlist: GroupModelAllowlist{Enabled: false, Models: []string{"gpt-5.6-sol"}},
+		},
+		{
+			ID: 40, Name: "empty", Platform: PlatformOpenAI, RateMultiplier: 1,
+			ModelAllowlist: GroupModelAllowlist{Enabled: true},
+		},
+	}
+
+	out, err := newPlazaService(channels, groups, nil).ListGroups(context.Background())
+
+	require.NoError(t, err)
+	require.Len(t, out, 3, "a group with no allowlisted models must not be displayed")
+	byName := make(map[string][]string, len(out))
+	for _, group := range out {
+		for _, model := range group.Models {
+			byName[group.Name] = append(byName[group.Name], model.Name)
+		}
+	}
+	require.Equal(t, []string{"gpt-5.6-sol", "gpt-6-astra"}, byName["exact"])
+	require.Equal(t, []string{"gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"}, byName["wildcard"])
+	require.Equal(t, []string{"gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-6-astra"}, byName["disabled"])
+	require.NotContains(t, byName, "empty")
+}
+
 func TestWithDefaultMaxReasoningEffortMultiplier_Fable51(t *testing.T) {
 	base := &ChannelModelPricing{BillingMode: BillingModeToken}
 	got := withDefaultMaxReasoningEffortMultiplier(base, "claude-fable-5-1")
