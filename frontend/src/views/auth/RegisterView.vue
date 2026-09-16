@@ -114,15 +114,15 @@
 
         <!-- Confirm Password Input -->
         <div>
-          <label for="confirm_password" class="input-label">
-            {{ t('auth.confirmPasswordLabel') }}
+          <label for="confirmPassword" class="input-label">
+            {{ t('auth.confirmPassword') }}
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
             <input
-              id="confirm_password"
+              id="confirmPassword"
               v-model="formData.confirmPassword"
               :type="showConfirmPassword ? 'text' : 'password'"
               required
@@ -995,11 +995,12 @@ function validateForm(): boolean {
     isValid = false
   }
 
+  // Confirm password validation
   if (!formData.confirmPassword) {
     errors.confirmPassword = t('auth.confirmPasswordRequired')
     isValid = false
-  } else if (formData.confirmPassword !== formData.password) {
-    errors.confirmPassword = t('auth.passwordMismatch')
+  } else if (formData.password !== formData.confirmPassword) {
+    errors.confirmPassword = t('auth.passwordsDoNotMatch')
     isValid = false
   }
 
