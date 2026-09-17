@@ -55,8 +55,8 @@ function mountHome(settings: Record<string, unknown> = {}) {
   })
 }
 
-function compactDestination(wrapper: ReturnType<typeof mountHome>) {
-  return wrapper.get('[data-testid="compact-home"]').findComponent(RouterLinkStub).props('to')
+function homeDestination(wrapper: ReturnType<typeof mountHome>) {
+  return wrapper.get('[data-testid="home-page"]').findComponent(RouterLinkStub).props('to')
 }
 
 function modelPlazaDestination(wrapper: ReturnType<typeof mountHome>) {
@@ -66,7 +66,7 @@ function modelPlazaDestination(wrapper: ReturnType<typeof mountHome>) {
     ?.props('to')
 }
 
-describe('HomeView compact mode', () => {
+describe('HomeView', () => {
   beforeEach(() => {
     authStore.isAuthenticated = false
     authStore.isAdmin = false
@@ -77,48 +77,48 @@ describe('HomeView compact mode', () => {
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
   })
 
-  it('renders custom HTML ahead of compact mode', () => {
+  it('renders custom HTML ahead of the built-in home', () => {
     const wrapper = mountHome({
       compact_home_enabled: true,
       home_content: '<section id="custom-home">Custom home</section>',
     })
 
     expect(wrapper.get('#custom-home').text()).toBe('Custom home')
-    expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="home-page"]').exists()).toBe(false)
   })
 
-  it('renders custom URL content ahead of compact mode', () => {
+  it('renders custom URL content ahead of the built-in home', () => {
     const wrapper = mountHome({
       compact_home_enabled: true,
       home_content: ' https://example.com/home ',
     })
 
     expect(wrapper.get('iframe').attributes('src')).toBe('https://example.com/home')
-    expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="home-page"]').exists()).toBe(false)
   })
 
-  it('treats whitespace-only custom content as empty and selects compact mode', () => {
+  it('treats whitespace-only custom content as empty and selects the built-in home', () => {
     const wrapper = mountHome({ compact_home_enabled: true, home_content: ' \n\t ' })
 
-    expect(wrapper.get('[data-testid="compact-home"]').text()).toContain('Test site')
+    expect(wrapper.get('[data-testid="home-page"]').text()).toContain('Test site')
   })
 
-  it.each([undefined, false])('selects the default home when compact mode is %s', (enabled) => {
+  it.each([undefined, false, true])('renders the built-in home regardless of the legacy setting (%s)', (enabled) => {
     const settings = enabled === undefined ? {} : { compact_home_enabled: enabled }
     const wrapper = mountHome(settings)
 
-    expect(wrapper.find('[data-testid="compact-home"]').exists()).toBe(false)
-    expect(wrapper.find('.tui-window').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="home-page"]').text()).toContain('Test site')
+    expect(wrapper.find('.tui-window').exists()).toBe(false)
   })
 
   it('links unauthenticated visitors to login', () => {
-    expect(compactDestination(mountHome({ compact_home_enabled: true }))).toBe('/login')
+    expect(homeDestination(mountHome({ compact_home_enabled: true }))).toBe('/login')
   })
 
   it('links authenticated users to their dashboard', () => {
     authStore.isAuthenticated = true
 
-    expect(compactDestination(mountHome({ compact_home_enabled: true }))).toBe('/dashboard')
+    expect(homeDestination(mountHome({ compact_home_enabled: true }))).toBe('/dashboard')
   })
 
   it('links administrators to the admin dashboard', () => {
@@ -126,7 +126,7 @@ describe('HomeView compact mode', () => {
     authStore.isAdmin = true
 
     const wrapper = mountHome({ compact_home_enabled: true })
-    expect(compactDestination(wrapper)).toBe('/admin/dashboard')
+    expect(homeDestination(wrapper)).toBe('/admin/dashboard')
     expect(authStore.checkAuth).toHaveBeenCalledOnce()
     expect(appStore.fetchPublicSettings).not.toHaveBeenCalled()
   })
@@ -158,15 +158,6 @@ describe('HomeView compact mode', () => {
       compact_home_enabled: true,
       model_plaza_enabled: true,
       model_plaza_require_auth: true,
-    })
-
-    expect(modelPlazaDestination(wrapper)).toBe('/model-plaza')
-  })
-
-  it('shows the model plaza link in the default home header', () => {
-    const wrapper = mountHome({
-      model_plaza_enabled: true,
-      model_plaza_require_auth: false,
     })
 
     expect(modelPlazaDestination(wrapper)).toBe('/model-plaza')

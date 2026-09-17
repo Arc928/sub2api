@@ -745,20 +745,12 @@ describe("admin SettingsView payment visible method controls", () => {
     wrapper.unmount();
   });
 
-  it("submits the compact home page toggle", async () => {
+  it("removes the obsolete compact home page toggle", async () => {
     const wrapper = mountView();
     await flushPromises();
 
-    const toggle = wrapper.get('[data-testid="compact-home-toggle"]');
-    expect((toggle.element as HTMLInputElement).checked).toBe(false);
-
-    await toggle.setValue(true);
-    await wrapper.find("form").trigger("submit.prevent");
-    await flushPromises();
-
-    expect(updateSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ compact_home_enabled: true }),
-    );
+    expect(wrapper.find('[data-testid="compact-home-toggle"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it("renders panel rate limit card and saves settings", async () => {

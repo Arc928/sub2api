@@ -25,11 +25,12 @@
    ★ 参数全部取自官网，改动即偏离。
    ============================================================ */
 
-(function () {
+window.Sub2APIHomeEffects = window.Sub2APIHomeEffects || {};
+window.Sub2APIHomeEffects.fluid = function (canvas) {
   'use strict';
-
-  const canvas = document.getElementById('fluid-canvas');
-  if (!canvas) return;
+  const listeners = new AbortController();
+  const lightColors = ['#f2f7ff', '#bcd4f7', '#8fb3ea', '#e8d9b8', '#f2f7ff'];
+  const darkColors = ['#000000', '#1A3870', '#204a7e', '#eed8aa', '#000000'];
 
   /* ---------------- 官网参数（page chunk @26008，逐字抄录） ---------------- */
   const PARAMS = {
@@ -60,10 +61,7 @@
     offsetY: -48,
     grain: 0.005,
 
-    // 宿主可在加载本脚本前设置 window.__FLUID_COLORS_OVERRIDE__ 覆盖调色板（如浅色主题）
-    colors: (typeof window !== 'undefined' && window.__FLUID_COLORS_OVERRIDE__)
-      ? JSON.parse(window.__FLUID_COLORS_OVERRIDE__.replace(/'/g, '"'))
-      : ['#000000', '#1A3870', '#204a7e', '#eed8aa', '#000000'],
+    colors: darkColors,
 
     lightX: 0.89,
     lightY: 0.46,
@@ -424,10 +422,10 @@ void main(){
     mouse.y = 1 - (e.clientY - r.top) / r.height;   // 官网：翻转成 y 向上
   }
   if (pointerEnabled) {
-    window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('mousemove', onMove, { passive: true, signal: listeners.signal });
     window.addEventListener('touchmove', (e) => {
       if (e.touches.length) onMove(e.touches[0]);
-    }, { passive: true });
+    }, { passive: true, signal: listeners.signal });
   }
 
   // 供 script.js 的粒子层复用同一股流
@@ -456,6 +454,7 @@ void main(){
     if (cw !== VW || ch !== VH) { ready = resize(); if (!ready) return; }
 
     const w = PARAMS;
+    w.colors = document.documentElement.classList.contains('dark') ? darkColors : lightColors;
 
     // 指针平滑（官网公式：用「目标与平滑值之差」当作速度来源）
     mouse.smoothX += (mouse.x - mouse.smoothX) * w.mouseSmoothing;
@@ -534,11 +533,22 @@ void main(){
     sharedFlow.vy = -mouse.svy * (canvas.clientHeight || window.innerHeight);
   }
 
-  window.addEventListener('resize', () => { ready = resize(); });
-  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cancelAnimationFrame(raf); });
-  canvas.addEventListener('webglcontextrestored', () => { window.location.reload(); });
+  window.addEventListener('resize', () => { ready = resize(); }, { signal: listeners.signal });
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cancelAnimationFrame(raf); }, { signal: listeners.signal });
+  canvas.addEventListener('webglcontextrestored', () => { window.location.reload(); }, { signal: listeners.signal });
 
   ready = resize();
   raf = requestAnimationFrame(frame);
-})();
+  return () => {
+    listeners.abort();
+    cancelAnimationFrame(raf);
+    for (const rt of [rtP, rtQ]) {
+      if (rt) { gl.deleteFramebuffer(rt.fbo); gl.deleteTexture(rt.tex); }
+    }
+    gl.deleteBuffer(quad);
+    gl.deleteProgram(flowProg);
+    gl.deleteProgram(mainProg);
+    if (window.__dshFlow === sharedFlow) delete window.__dshFlow;
+  };
+};
 

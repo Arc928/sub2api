@@ -934,13 +934,8 @@ function handleGroupClick(item: NavItem) {
 
 // Initialize theme
 const savedTheme = localStorage.getItem('theme')
-if (
-  savedTheme === 'dark' ||
-  (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-) {
-  isDark.value = true
-  document.documentElement.classList.add('dark')
-}
+isDark.value = savedTheme !== 'light'
+document.documentElement.classList.toggle('dark', isDark.value)
 
 // Fetch admin settings (for feature-gated nav items like Ops).
 watch(

@@ -2,11 +2,10 @@
 // DeepSeek Harness Replica - 图案粒子层（叠加在 WebGL 液态金属流体之上）
 // 粒子组成一个抽象的科技图案，指针经过时只推开"指针大小"的一小片，离开后柔和复位
 
-(function () {
+window.Sub2APIHomeEffects = window.Sub2APIHomeEffects || {};
+window.Sub2APIHomeEffects.particles = function (canvas) {
   'use strict';
-
-  const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
+  const listeners = new AbortController();
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -93,23 +92,25 @@
   let mouseOn = 0;
   let idleTimer = null;
 
-  /* ---------------- 预渲染光晕精灵（比每帧画径向渐变快一个数量级） ----------------
-     纯白：不掺任何蓝，配合 lighter 叠加也不会偏色。 */
-  const glowSprite = (function () {
+  /* 预渲染两种主题的光晕：深色背景用白色，浅色背景用蓝色以保持对比度。 */
+  function createGlowSprite(rgb) {
     const s = 64;
     const c = document.createElement('canvas');
     c.width = c.height = s;
     const g = c.getContext('2d');
     const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    grd.addColorStop(0.00, 'rgba(255,255,255,1)');
-    grd.addColorStop(0.16, 'rgba(255,255,255,0.90)');
-    grd.addColorStop(0.38, 'rgba(255,255,255,0.26)');
-    grd.addColorStop(0.72, 'rgba(255,255,255,0.05)');
-    grd.addColorStop(1.00, 'rgba(255,255,255,0)');
+    grd.addColorStop(0.00, 'rgba(' + rgb + ',1)');
+    grd.addColorStop(0.16, 'rgba(' + rgb + ',0.90)');
+    grd.addColorStop(0.38, 'rgba(' + rgb + ',0.26)');
+    grd.addColorStop(0.72, 'rgba(' + rgb + ',0.05)');
+    grd.addColorStop(1.00, 'rgba(' + rgb + ',0)');
     g.fillStyle = grd;
     g.fillRect(0, 0, s, s);
     return c;
-  })();
+  }
+  const lightSprite = createGlowSprite('50,105,185');
+  const darkSprite = createGlowSprite('255,255,255');
+  let dark = document.documentElement.classList.contains('dark');
 
   /* ---------------- 尺寸 ---------------- */
   function resize() {
@@ -121,8 +122,6 @@
     height = Math.round(rect.height) || window.innerHeight;
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     initTargets();
     initParticles();
@@ -228,14 +227,14 @@
      这里读卡片实际位置，把图案放到它上方那条空白带的中心并水平对齐卡片；
      上方空间不够（窄屏竖排、或卡片几乎顶到头）就退回默认比例。 */
   function patternCenter(size) {
-    const narrow = width < 1024;
+    const narrow = width < 768;
     const fallback = {
       cx: width * (narrow ? 0.5 : config.patternCX),
       cy: height * config.patternCY,
       scale: 1,
     };
-    const card = document.querySelector('.hero-code');
-    const heroEl = document.querySelector('.hero');
+    const card = document.querySelector('[data-home-endpoint]');
+    const heroEl = document.querySelector('[data-home-hero]');
     if (!card || !heroEl || narrow) return fallback;
 
     const cRect = canvas.getBoundingClientRect();
@@ -272,8 +271,8 @@
        不管上面走的是空白带路径还是比例回退路径，最后统一夹紧：
        最低点若越过「卡片上沿 - 12px 气口」，以图案中心为锚整体缩放；
        中心本身太低就再上移兜底。 */
-    const cardEl = document.querySelector('.hero-code');
-    if (cardEl && pts.length && width >= 1024) {
+    const cardEl = document.querySelector('[data-home-endpoint]');
+    if (cardEl && pts.length && width >= 768) {
       const cRect = canvas.getBoundingClientRect();
       const maxY = cardEl.getBoundingClientRect().top - cRect.top - 12;
       const lowest = Math.max.apply(null, pts.map((p) => p.y));
@@ -483,7 +482,7 @@
       const size = (this.radius * config.glowScale) * (1 + proximity * 0.55);
 
       ctx.globalAlpha = alpha;
-      ctx.drawImage(glowSprite, this.x - size, this.y - size, size * 2, size * 2);
+      ctx.drawImage(dark ? darkSprite : lightSprite, this.x - size, this.y - size, size * 2, size * 2);
     }
   }
 
@@ -540,7 +539,8 @@
     mouseOn += ((mouse.active ? 1 : 0) - mouseOn) * 0.08;
 
     ctx.clearRect(0, 0, width, height);
-    ctx.globalCompositeOperation = 'lighter';
+    dark = document.documentElement.classList.contains('dark');
+    ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
 
     for (let i = 0; i < particles.length; i++) {
       particles[i].update(time, dt);
@@ -555,8 +555,9 @@
 
   /* ---------------- 交互 ---------------- */
   function setPointer(x, y) {
-    mouse.x = x;
-    mouse.y = y;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = x - rect.left;
+    mouse.y = y - rect.top;
     mouse.active = true;
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => { mouse.active = false; }, config.idleTimeout);
@@ -566,26 +567,27 @@
     clearTimeout(idleTimer);
   }
 
-  window.addEventListener('mousemove', (e) => setPointer(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('mouseleave', clearPointer);
-  window.addEventListener('blur', clearPointer);
+  window.addEventListener('mousemove', (e) => setPointer(e.clientX, e.clientY), { passive: true, signal: listeners.signal });
+  window.addEventListener('mouseleave', clearPointer, { signal: listeners.signal });
+  window.addEventListener('blur', clearPointer, { signal: listeners.signal });
   window.addEventListener('touchstart', (e) => {
     if (e.touches.length) setPointer(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: true });
+  }, { passive: true, signal: listeners.signal });
   window.addEventListener('touchmove', (e) => {
     if (e.touches.length) setPointer(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: true });
-  window.addEventListener('touchend', clearPointer);
+  }, { passive: true, signal: listeners.signal });
+  window.addEventListener('touchend', clearPointer, { signal: listeners.signal });
 
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', resize, { signal: listeners.signal });
 
   resize();
   animationId = requestAnimationFrame(frame);
 
   /* 图案轮换：AI 字样 → 各厂商 SVG 图标，循环重组。
      页面切到后台时暂停，回来再续上，避免离屏空转。 */
+  let rotTimer = null;
   if (patternList.length > 1) {
-    let rotTimer = setInterval(() => {
+    rotTimer = setInterval(() => {
       switchPattern((patternIndex + 1) % patternList.length);
     }, config.patternInterval);
 
@@ -598,6 +600,14 @@
           switchPattern((patternIndex + 1) % patternList.length);
         }, config.patternInterval);
       }
-    });
+    }, { signal: listeners.signal });
   }
-})();
+
+  return () => {
+    listeners.abort();
+    cancelAnimationFrame(animationId);
+    clearInterval(rotTimer);
+    clearTimeout(morphTimer);
+    clearTimeout(idleTimer);
+  };
+};
