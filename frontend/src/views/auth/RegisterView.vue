@@ -1,12 +1,12 @@
 <template>
-  <AuthLayout>
+  <AuthLayout home-background>
     <div class="space-y-6">
       <!-- Title -->
       <div class="text-center">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
           {{ t('auth.createAccount') }}
         </h2>
-        <p class="mt-2 text-sm text-gray-500 dark:text-dark-400">
+        <p class="mt-2 text-sm text-gray-500 dark:text-[#dce6f3]">
           {{ t('auth.signUpToStart', { siteName }) }}
         </p>
       </div>
@@ -35,7 +35,7 @@
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="user" size="md" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="user" size="md" class="text-gray-400 dark:text-[#9fb0c8]" />
             </div>
             <input
               id="username"
@@ -46,7 +46,7 @@
               autofocus
               autocomplete="username"
               :disabled="registrationActionDisabled"
-              class="input pl-11"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11"
               :class="{ 'input-error': errors.username }"
               :placeholder="t('auth.usernamePlaceholder')"
             />
@@ -60,7 +60,7 @@
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="mail" size="md" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="mail" size="md" class="text-gray-400 dark:text-[#9fb0c8]" />
             </div>
             <input
               id="email"
@@ -69,7 +69,7 @@
               required
               autocomplete="email"
               :disabled="registrationActionDisabled"
-              class="input pl-11"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11"
               :class="{ 'input-error': errors.email }"
               :placeholder="t('auth.emailPlaceholder')"
             />
@@ -83,7 +83,7 @@
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="lock" size="md" class="text-gray-400 dark:text-[#9fb0c8]" />
             </div>
             <input
               id="password"
@@ -92,7 +92,7 @@
               required
               autocomplete="new-password"
               :disabled="registrationActionDisabled"
-              class="input pl-11 pr-11"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11 pr-11"
               :class="{ 'input-error': errors.password }"
               :placeholder="t('auth.createPasswordPlaceholder')"
             />
@@ -101,13 +101,13 @@
               :disabled="registrationActionDisabled"
               :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
               @click="showPassword = !showPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:text-[#dce6f3] dark:hover:text-white"
             >
               <Icon v-if="showPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
             </button>
           </div>
-          <p class="input-hint">
+          <p class="input-hint dark:text-[#dce6f3]">
             {{ t('auth.passwordHint') }}
           </p>
         </div>
@@ -119,7 +119,7 @@
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="lock" size="md" class="text-gray-400 dark:text-[#9fb0c8]" />
             </div>
             <input
               id="confirmPassword"
@@ -128,7 +128,7 @@
               required
               autocomplete="new-password"
               :disabled="registrationActionDisabled"
-              class="input pl-11 pr-11"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11 pr-11"
               :class="{ 'input-error': errors.confirmPassword }"
               :placeholder="t('auth.confirmPasswordPlaceholder')"
             />
@@ -137,7 +137,7 @@
               :disabled="registrationActionDisabled"
               :aria-label="showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')"
               @click="showConfirmPassword = !showConfirmPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:text-[#dce6f3] dark:hover:text-white"
             >
               <Icon v-if="showConfirmPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
@@ -152,14 +152,14 @@
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="key" size="md" :class="invitationValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-dark-500'" />
+              <Icon name="key" size="md" :class="invitationValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-[#9fb0c8]'" />
             </div>
             <input
               id="invitation_code"
               v-model="formData.invitation_code"
               type="text"
               :disabled="registrationActionDisabled"
-              class="input pl-11 pr-10"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11 pr-10"
               :class="{
                 'border-green-500 focus:border-green-500 focus:ring-green-500': invitationValidation.valid,
                 'border-red-500 focus:border-red-500 focus:ring-red-500': invitationValidation.invalid || errors.invitation_code
@@ -196,18 +196,18 @@
         <div v-else-if="affiliateEnabled" data-testid="affiliate-invitation-field">
           <label for="affiliate_code" class="input-label">
             {{ t('auth.invitationCodeLabel') }}
-            <span class="ml-1 text-xs font-normal text-gray-400 dark:text-dark-500">({{ t('common.optional') }})</span>
+            <span class="ml-1 text-xs font-normal text-gray-400 dark:text-[#9fb0c8]">({{ t('common.optional') }})</span>
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="key" size="md" class="text-gray-400 dark:text-dark-500" />
+              <Icon name="key" size="md" class="text-gray-400 dark:text-[#9fb0c8]" />
             </div>
             <input
               id="affiliate_code"
               v-model="formData.aff_code"
               type="text"
               :disabled="registrationActionDisabled"
-              class="input pl-11"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11"
               :placeholder="t('auth.invitationCodePlaceholder')"
             />
           </div>
@@ -217,18 +217,18 @@
         <div v-if="promoCodeEnabled">
           <label for="promo_code" class="input-label">
             {{ t('auth.promoCodeLabel') }}
-            <span class="ml-1 text-xs font-normal text-gray-400 dark:text-dark-500">({{ t('common.optional') }})</span>
+            <span class="ml-1 text-xs font-normal text-gray-400 dark:text-[#9fb0c8]">({{ t('common.optional') }})</span>
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Icon name="gift" size="md" :class="promoValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-dark-500'" />
+              <Icon name="gift" size="md" :class="promoValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-[#9fb0c8]'" />
             </div>
             <input
               id="promo_code"
               v-model="formData.promo_code"
               type="text"
               :disabled="registrationActionDisabled"
-              class="input pl-11 pr-10"
+              class="input dark:bg-[#0f1b30] dark:placeholder:text-[#9fb0c8] pl-11 pr-10"
               :class="{
                 'border-green-500 focus:border-green-500 focus:ring-green-500': promoValidation.valid,
                 'border-red-500 focus:border-red-500 focus:ring-red-500': promoValidation.invalid
@@ -333,7 +333,7 @@
       <div v-if="showOAuthLogin" class="space-y-3 pt-1">
         <div class="flex items-center gap-3">
           <div class="h-px flex-1 bg-gray-200 dark:bg-dark-700"></div>
-          <span class="text-xs text-gray-500 dark:text-dark-400">
+          <span class="text-xs text-gray-500 dark:text-[#dce6f3]">
             {{ t('auth.oauthOrContinue') }}
           </span>
           <div class="h-px flex-1 bg-gray-200 dark:bg-dark-700"></div>
@@ -377,11 +377,11 @@
 
     <!-- Footer -->
     <template #footer>
-      <p class="text-gray-500 dark:text-dark-400">
+      <p class="text-gray-500 dark:text-[#dce6f3]">
         {{ t('auth.alreadyHaveAccount') }}
         <router-link
           to="/login"
-          class="font-medium text-primary-600 transition-colors hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+          class="font-medium text-primary-600 transition-colors hover:text-primary-500 dark:text-white dark:hover:text-[#bfdbfe]"
         >
           {{ t('auth.signIn') }}
         </router-link>
