@@ -79,6 +79,29 @@ describe('PlazaModelPricingTable compact cards', () => {
     expect(card.find('.line-through').exists()).toBe(false)
   })
 
+  it('shows configured reasoning multipliers in level order', () => {
+    const model = tokenModel()
+    model.pricing!.reasoning_effort_multipliers = { max: 3, none: 0.5, high: 1.5 }
+    const card = mountTable([model]).get('[data-testid="model-price-card"]')
+    const badges = card.findAll('[data-reasoning-effort]')
+
+    expect(badges.map(badge => badge.attributes('data-reasoning-effort'))).toEqual(['none', 'high', 'max'])
+    expect(badges.every(badge => badge.attributes('title') === 'modelPlaza.table.reasoningMultiplierHint')).toBe(true)
+    expect(card.text()).toContain('modelPlaza.table.reasoningMultiplierBadge')
+  })
+
+  it('does not show unconfigured reasoning charges for Fable models', () => {
+    const card = mountTable([tokenModel({ name: 'claude-fable-5-1' })]).get('[data-testid="model-price-card"]')
+    expect(card.find('[data-reasoning-effort]').exists()).toBe(false)
+  })
+
+  it('omits invalid or unsupported reasoning multipliers', () => {
+    const model = tokenModel()
+    model.pricing!.reasoning_effort_multipliers = { max: 0, high: Infinity, unknown: 2, low: 1 }
+    const badges = mountTable([model]).findAll('[data-reasoning-effort]')
+    expect(badges.map(badge => badge.attributes('data-reasoning-effort'))).toEqual(['low'])
+  })
+
   it('does not expand long-context tiers or time-pricing periods into extra rows', () => {
     const model = tokenModel({
       pricing: {

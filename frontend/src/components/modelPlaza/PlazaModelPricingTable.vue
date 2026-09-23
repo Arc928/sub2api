@@ -22,6 +22,17 @@
               {{ platformLabel(m.platform) }}
             </span>
           </div>
+          <div v-if="reasoningEffortMultipliers(m).length" class="mt-2 flex flex-wrap gap-1.5">
+            <span
+              v-for="[effort, multiplier] in reasoningEffortMultipliers(m)"
+              :key="effort"
+              class="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
+              :title="t('modelPlaza.table.reasoningMultiplierHint', { effort, multiplier })"
+              :data-reasoning-effort="effort"
+            >
+              {{ t('modelPlaza.table.reasoningMultiplierBadge', { effort, multiplier }) }}
+            </span>
+          </div>
         </div>
 
         <span class="model-rate" :aria-label="t('modelPlaza.table.rate')">
@@ -90,9 +101,20 @@ import { platformAccentColor, platformBadgeLightClass, platformLabel } from '@/u
 import {
   BILLING_MODE_TOKEN,
   BILLING_MODE_IMAGE,
+  REASONING_EFFORT_LEVELS,
   type BillingMode
 } from '@/constants/channel'
 import type { PlazaModel } from '@/api/modelPlaza'
+
+function reasoningEffortMultipliers(model: PlazaModel): [string, number][] {
+  const multipliers = model.pricing?.reasoning_effort_multipliers
+  return REASONING_EFFORT_LEVELS.flatMap(effort => {
+    const multiplier = multipliers?.[effort]
+    return typeof multiplier === 'number' && Number.isFinite(multiplier) && multiplier > 0
+      ? [[effort, multiplier] as [string, number]]
+      : []
+  })
+}
 
 const props = defineProps<{
   models: PlazaModel[]
