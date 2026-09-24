@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mount, RouterLinkStub } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 
 import HomeView from '../HomeView.vue'
 
@@ -67,6 +67,10 @@ function modelPlazaDestination(wrapper: ReturnType<typeof mountHome>) {
 }
 
 describe('HomeView', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   beforeEach(() => {
     authStore.isAuthenticated = false
     authStore.isAdmin = false
@@ -171,5 +175,50 @@ describe('HomeView', () => {
     })
 
     expect(modelPlazaDestination(wrapper)).toBeUndefined()
+  })
+
+  it('measures the selected endpoint and shows its latency', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({})
+    vi.stubGlobal('fetch', fetchMock)
+    const wrapper = mountHome({
+      custom_endpoints: [
+        { name: 'Primary', endpoint: 'https://api.example.test/v1', description: '' },
+        { name: 'Backup', endpoint: 'https://backup.example.test/v1', description: '' },
+      ],
+    })
+
+    await wrapper.get('button[aria-label="home.endpointCard.speedTest: Primary"]').trigger('click')
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.test/v1', expect.objectContaining({
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      credentials: 'omit',
+    }))
+    expect(wrapper.findAll('[role="status"]')[0].text()).toMatch(/^\d+ ms$/)
+    expect(wrapper.findAll('[role="status"]')).toHaveLength(1)
+  })
+
+  it('reports failed probes and prevents duplicate requests while testing', async () => {
+    let rejectRequest!: (error: Error) => void
+    const fetchMock = vi.fn().mockImplementation(() => new Promise((_, reject) => {
+      rejectRequest = reject
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    const wrapper = mountHome()
+    const button = wrapper.get('button[title="home.endpointCard.speedTest"]')
+
+    await button.trigger('click')
+    expect(button.attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[role="status"]').text()).toBe('home.endpointCard.testing')
+
+    rejectRequest(new Error('Network unavailable'))
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+    expect(button.attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[role="status"]').text()).toBe('home.endpointCard.error')
   })
 })

@@ -26,6 +26,10 @@ export default {
       label: 'API 接入地址',
       copy: '复制',
       copied: '已复制',
+      speedTest: '测速',
+      testing: '测速中…',
+      error: '连接失败',
+      timeout: '已超时',
       fallbackName: '默认接入',
       fallbackDesc: '兼容 OpenAI / Anthropic 协议，直接替换 Base URL 即可使用。'
     },

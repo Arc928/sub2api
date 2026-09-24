@@ -21,7 +21,7 @@
     <HomeBackground :site-name="siteName" />
 
     <!-- Header -->
-    <header class="relative z-10 px-4 py-4 sm:px-6">
+    <header class="relative z-20 px-4 py-4 sm:px-6">
       <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 sm:gap-4">
         <!-- Logo + wordmark -->
         <div class="flex min-w-0 flex-1 items-center gap-3">
@@ -33,7 +33,7 @@
           <span class="hidden min-w-0 truncate text-base font-bold sm:inline">{{ siteName }}</span>
         </div>
         <div class="home-nav-actions flex max-w-full shrink-0 flex-wrap items-center justify-end gap-1.5 rounded-full p-1.5 sm:gap-2 dark:bg-[#0b1220]/80 dark:shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:backdrop-blur-xl">
-          <LocaleSwitcher class="home-locale" />
+          <LocaleSwitcher class="home-locale" dropdown-alignment="start" />
           <a
             v-if="docUrl"
             :href="docUrl"
@@ -163,14 +163,42 @@
                     {{ ep.description }}
                   </span>
                 </div>
-                <div
-                  class="truncate font-mono text-xs text-slate-500 dark:text-[#dce6f3]"
-                  :title="ep.endpoint"
-                >
-                  {{ ep.endpoint }}
+                <div class="flex h-4 min-w-0 items-center gap-2">
+                  <span
+                    class="min-w-0 truncate font-mono text-xs text-slate-500 dark:text-[#dce6f3]"
+                    :title="ep.endpoint"
+                  >
+                    {{ ep.endpoint }}
+                  </span>
+                  <span
+                    v-if="speedResults[ep.endpoint]"
+                    class="shrink-0 font-mono text-[11px]"
+                    :class="speedResults[ep.endpoint].status === 'success'
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : speedResults[ep.endpoint].status === 'testing'
+                        ? 'text-slate-500 dark:text-slate-300'
+                        : 'text-red-600 dark:text-red-300'"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {{ speedResultText(ep.endpoint) }}
+                  </span>
                 </div>
               </div>
-              <Icon name="bolt" size="sm" class="shrink-0 text-slate-400 dark:text-[#dce6f3]" />
+              <button
+                type="button"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-white hover:text-slate-700 disabled:cursor-wait dark:text-[#dce6f3] dark:hover:bg-white/15 dark:hover:text-white"
+                :disabled="speedResults[ep.endpoint]?.status === 'testing'"
+                :title="t('home.endpointCard.speedTest')"
+                :aria-label="t('home.endpointCard.speedTest') + ': ' + ep.name"
+                @click="testEndpointSpeed(ep.endpoint)"
+              >
+                <Icon
+                  name="bolt"
+                  size="sm"
+                  :class="{ 'animate-pulse': speedResults[ep.endpoint]?.status === 'testing' }"
+                />
+              </button>
               <button
                 type="button"
                 class="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-slate-700 dark:text-white dark:hover:bg-white/15 dark:hover:text-white"
@@ -199,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
@@ -275,6 +303,47 @@ const endpointCards = computed<EndpointEntry[]>(() => {
 // Copy-to-clipboard for endpoint rows
 const { copyToClipboard } = useClipboard()
 const copiedId = ref<string | null>(null)
+type SpeedTestResult = { status: 'testing' | 'success' | 'error' | 'timeout'; latencyMs?: number }
+const speedResults = reactive<Record<string, SpeedTestResult>>({})
+
+function speedResultText(endpoint: string): string {
+  const result = speedResults[endpoint]
+  if (!result) return ''
+  if (result.status === 'success') return `${result.latencyMs} ms`
+  return t(`home.endpointCard.${result.status}`)
+}
+
+async function testEndpointSpeed(endpoint: string) {
+  if (speedResults[endpoint]?.status === 'testing') return
+
+  speedResults[endpoint] = { status: 'testing' }
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 8000)
+  const startedAt = performance.now()
+
+  try {
+    if (!endpoint.trim()) throw new Error('Invalid endpoint')
+    const url = new URL(endpoint, window.location.origin)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Invalid endpoint')
+
+    await fetch(url.href, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      credentials: 'omit',
+      signal: controller.signal
+    })
+    speedResults[endpoint] = {
+      status: 'success',
+      latencyMs: Math.max(1, Math.round(performance.now() - startedAt))
+    }
+  } catch {
+    speedResults[endpoint] = { status: controller.signal.aborted ? 'timeout' : 'error' }
+  } finally {
+    window.clearTimeout(timeout)
+  }
+}
+
 async function copyEndpoint(endpoint: string, name: string) {
   const ok = await copyToClipboard(endpoint, t('home.endpointCard.copied'))
   if (ok) {
@@ -317,6 +386,10 @@ onMounted(() => {
 
 <style scoped>
 /* Keep navigation legible over the bright parts of the animated background. */
+.home-locale :deep(button[title]) {
+  border-radius: 9999px;
+}
+
 .dark .home-locale :deep(button[title]),
 .dark .home-locale :deep(button[title] svg) {
   color: #fff;

@@ -26,6 +26,10 @@ export default {
       label: 'API Endpoint',
       copy: 'Copy',
       copied: 'Copied',
+      speedTest: 'Test latency',
+      testing: 'Testing…',
+      error: 'Failed',
+      timeout: 'Timed out',
       fallbackName: 'Default',
       fallbackDesc: 'Use this base URL with any OpenAI / Anthropic-compatible client.'
     },
