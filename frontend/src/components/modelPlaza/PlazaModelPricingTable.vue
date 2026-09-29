@@ -101,6 +101,7 @@ import { platformAccentColor, platformBadgeLightClass, platformLabel } from '@/u
 import {
   BILLING_MODE_TOKEN,
   BILLING_MODE_IMAGE,
+  BILLING_MODE_VIDEO,
   REASONING_EFFORT_LEVELS,
   type BillingMode
 } from '@/constants/channel'
@@ -123,6 +124,8 @@ const props = defineProps<{
   userRateMultiplier?: number | null
   imageRateIndependent?: boolean
   imageRateMultiplier?: number | null
+  videoRateIndependent?: boolean
+  videoRateMultiplier?: number | null
   peakWindow?: string
   peakRateMultiplier?: number | null
 }>()
@@ -195,6 +198,9 @@ function usesIndependentImageRate(model: PlazaModel): boolean {
 }
 
 function requestRate(model: PlazaModel): number {
+  if (billingMode(model) === BILLING_MODE_VIDEO && props.videoRateIndependent === true) {
+    return Math.max(0, props.videoRateMultiplier ?? 1)
+  }
   return usesIndependentImageRate(model) ? (props.imageRateMultiplier ?? 1) : effectiveRate.value
 }
 

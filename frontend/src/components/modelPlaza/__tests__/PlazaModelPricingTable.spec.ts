@@ -50,6 +50,55 @@ function mountTable(
 }
 
 describe('PlazaModelPricingTable compact cards', () => {
+  it.each([
+    { enabled: true, multiplier: 1, userRate: 0.05, expected: 1 },
+    { enabled: true, multiplier: 0.5, userRate: null, expected: 0.5 },
+    { enabled: true, multiplier: 0, userRate: 0.05, expected: 0 },
+    { enabled: true, multiplier: -1, userRate: null, expected: 0 },
+    { enabled: true, multiplier: null, userRate: 0.05, expected: 1 },
+    { enabled: false, multiplier: 1, userRate: 0.05, expected: 0.05 },
+    { enabled: false, multiplier: 1, userRate: null, expected: 0.15 }
+  ])('uses the video billing multiplier $expected when independent=$enabled', (tc) => {
+    const model = tokenModel({ name: 'video-test', official_pricing: null })
+    model.pricing!.billing_mode = 'video'
+    model.pricing!.per_request_price = 2
+    const wrapper = mountTable([model], 0.15, tc.userRate, {
+      imageRateIndependent: true,
+      imageRateMultiplier: 9,
+      videoRateIndependent: tc.enabled,
+      videoRateMultiplier: tc.multiplier
+    })
+    try {
+      const card = wrapper.get('[data-testid="model-price-card"]')
+      expect(card.get('.paid-price').text()).toContain(`$${(2 * tc.expected).toFixed(2)}`)
+      expect(card.get('.model-rate').text()).toBe(`${tc.expected}x`)
+      expect(card.get('.price-meta').text()).toContain(`${tc.expected}x`)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('applies video independent rates to resolution tiers', () => {
+    const model = tokenModel({ name: 'video-tier-test', official_pricing: null })
+    model.pricing!.billing_mode = 'video'
+    model.pricing!.intervals = [{
+      min_tokens: 0, max_tokens: null, tier_label: '720p',
+      input_price: null, output_price: null, cache_write_price: null,
+      cache_read_price: null, per_request_price: 2
+    }]
+    const wrapper = mountTable([model], 0.15, 0.05, {
+      videoRateIndependent: true, videoRateMultiplier: 0.5
+    })
+    try {
+      const card = wrapper.get('[data-testid="model-price-card"]')
+      expect(card.text()).toContain('720p')
+      expect(card.get('.paid-price').text()).toContain('$1.00')
+      expect(card.get('.model-rate').text()).toBe('0.5x')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('shows only input, output, and cache read for token models', () => {
     const card = mountTable([tokenModel()], 0.09).get('[data-testid="model-price-card"]')
     const rows = card.findAll('.price-row')
