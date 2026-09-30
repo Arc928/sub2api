@@ -107,7 +107,7 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
+        <table class="console-distribution-table w-full text-xs">
           <thead>
             <tr class="text-gray-500 dark:text-gray-400">
               <th class="pb-2 text-left">{{ t('admin.dashboard.model') }}</th>
@@ -187,7 +187,7 @@
         <Doughnut :data="rankingChartData" :options="rankingDoughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
+        <table class="console-distribution-table w-full text-xs">
           <thead>
             <tr class="text-gray-500 dark:text-gray-400">
               <th class="pb-2 text-left">{{ t('admin.dashboard.spendingRankingUser') }}</th>
@@ -245,6 +245,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useChartTheme } from '@/composables/useChartTheme'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -339,20 +340,7 @@ const showAccountCost = computed(() => props.showAccountCost)
 const distributionColspan = computed(() => showAccountCost.value ? 6 : 5)
 const activeView = ref<'model_distribution' | 'spending_ranking'>('model_distribution')
 
-const chartColors = [
-  '#007aff', // accent
-  '#30d158', // success
-  '#ff9f0a', // warning
-  '#ff3b30', // danger
-  '#201d1d', // ink
-  '#646262', // mute
-  '#9a9898', // ash
-  '#0056b3', // accent-hover
-  '#24a947', // success-deep
-  '#cc7f08', // warning-deep
-  '#d70015', // danger-deep
-  '#424245' // body
-]
+const { colors, seriesColors, tooltipStyle } = useChartTheme()
 
 const displayModelStats = computed(() => {
   const sourceStats = props.source === 'upstream'
@@ -374,7 +362,7 @@ const chartData = computed(() => {
     datasets: [
       {
         data: displayModelStats.value.map((m) => toFiniteNumber(props.metric === 'actual_cost' ? m.actual_cost : m.total_tokens)),
-        backgroundColor: chartColors.slice(0, displayModelStats.value.length),
+        backgroundColor: seriesColors(displayModelStats.value.length),
         borderWidth: 0
       }
     ]
@@ -386,12 +374,12 @@ const rankingChartData = computed(() => {
 
   const labels = props.rankingItems.map((item, index) => `#${index + 1} ${getRankingUserLabel(item)}`)
   const data = props.rankingItems.map((item) => toFiniteNumber(item.actual_cost))
-  const backgroundColor = chartColors.slice(0, props.rankingItems.length)
+  const backgroundColor = seriesColors(props.rankingItems.length)
 
   if (otherRankingItem.value) {
     labels.push(t('admin.dashboard.spendingRankingOther'))
     data.push(otherRankingItem.value.actual_cost)
-    backgroundColor.push('#9a9898')
+    backgroundColor.push(colors.value.muted)
   }
 
   return {
@@ -445,6 +433,7 @@ const doughnutOptions = computed(() => ({
       display: false
     },
     tooltip: {
+      ...tooltipStyle.value,
       callbacks: {
         label: (context: any) => {
           const value = context.raw as number
@@ -468,6 +457,7 @@ const rankingDoughnutOptions = computed(() => ({
       display: false
     },
     tooltip: {
+      ...tooltipStyle.value,
       callbacks: {
         label: (context: any) => {
           const value = context.raw as number

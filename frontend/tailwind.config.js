@@ -1,20 +1,7 @@
 /**
- * Design system: OpenCode ("terminal-native manpage") style.
- * Reference: DESIGN-opencode.ai.md
- *
- * Strategy: the ~10k existing class usages reference Tailwind scale names
- * (primary-*, gray-*, dark-*, red/emerald/amber/blue-*, rounded-*, shadow-*).
- * We re-map those scales onto the OpenCode token vocabulary instead of
- * rewriting every component:
- *
- *   gray-*   -> warm neutral ladder (canvas #fdfcfc .. ink #201d1d .. #0f0000)
- *   primary* -> same monochrome ink ladder (the brand's only "color" is near-black)
- *   dark-*   -> dark surfaces (#201d1d / #302c2c family)
- *   red-*    -> danger  ramp (#ff3b30)      emerald/green -> success (#30d158)
- *   amber-*  -> warning ramp (#ff9f0a)      blue/sky      -> accent   (#007aff)
- *   purple/indigo/violet/pink/rose -> neutral stone ladder (chrome stays monochrome)
- *   rounded-{sm..3xl} -> 4px (interactive)  | shadows -> none (flat-on-cream)
- *   sans     -> monospace stack (Berkeley Mono fallback: IBM Plex Mono -> ui-monospace)
+ * Public pages retain the existing OpenCode tokens. Console routes override
+ * their CSS variables at the document root, including body-level Teleports.
+ * RGB channels preserve Tailwind opacity modifiers such as bg-primary-50/40.
  */
 
 const monoStack = [
@@ -118,62 +105,72 @@ const accent = {
   950: '#001d3a'
 }
 
+function scopedColor(hex, name) {
+  const channels = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16)).join(' ')
+  return `rgb(var(--ui-${name}, ${channels}) / <alpha-value>)`
+}
+
+function scopedScale(scale, name) {
+  return Object.fromEntries(Object.entries(scale).map(([step, hex]) => [step, scopedColor(hex, `${name}-${step}`)]))
+}
+
 export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Brand ink (monochrome ladder — the near-black IS the brand color)
-        primary: warm,
-        // Apple-blue accent ramp (reserved for in-product/status signals)
-        accent: accent,
+        // Public ink ladder; console routes substitute coral.
+        primary: scopedScale(warm, 'primary'),
+        // Public blue accent; console routes substitute teal.
+        accent: scopedScale(accent, 'accent'),
         // Semantic status ramps by name
-        danger: danger,
-        success: success,
-        warning: warning,
+        danger: scopedScale(danger, 'danger'),
+        success: scopedScale(success, 'success'),
+        warning: scopedScale(warning, 'warning'),
         // Dark surfaces
-        dark: darkSurfaces,
+        dark: scopedScale(darkSurfaces, 'dark'),
         // Warm neutrals replace cool grays
-        gray: warm,
-        slate: warm,
-        zinc: warm,
-        stone: warm,
-        neutral: warm,
+        gray: scopedScale(warm, 'neutral'),
+        slate: scopedScale(warm, 'neutral'),
+        zinc: scopedScale(warm, 'neutral'),
+        stone: scopedScale(warm, 'neutral'),
+        neutral: scopedScale(warm, 'neutral'),
         // Semantic status ramp remaps
-        red: danger,
-        rose: danger,
-        pink: danger,
-        emerald: success,
-        green: success,
-        teal: success,
-        cyan: success,
-        amber: warning,
-        orange: warning,
-        yellow: warning,
-        blue: accent,
-        sky: accent,
-        indigo: accent,
+        red: scopedScale(danger, 'danger'),
+        rose: scopedScale(danger, 'danger'),
+        pink: scopedScale(danger, 'danger'),
+        emerald: scopedScale(success, 'success'),
+        green: scopedScale(success, 'success'),
+        teal: scopedScale(success, 'success'),
+        cyan: scopedScale(success, 'success'),
+        amber: scopedScale(warning, 'warning'),
+        orange: scopedScale(warning, 'warning'),
+        yellow: scopedScale(warning, 'warning'),
+        blue: scopedScale(accent, 'accent'),
+        sky: scopedScale(accent, 'accent'),
+        indigo: scopedScale(accent, 'accent'),
         // Decorative hues collapse into the neutral ladder (monochrome chrome)
-        purple: warm,
-        violet: warm,
-        fuchsia: warm,
-        lime: warning,
+        purple: scopedScale(warm, 'neutral'),
+        violet: scopedScale(warm, 'neutral'),
+        fuchsia: scopedScale(warm, 'neutral'),
+        lime: scopedScale(warning, 'warning'),
+        white: scopedColor('#ffffff', 'white'),
         // Core tokens by name
-        ink: '#201d1d',
-        'ink-deep': '#0f0000',
-        charcoal: '#302c2c',
-        canvas: '#fdfcfc',
-        'surface-soft': '#f8f7f7',
-        'surface-card': '#f1eeee',
-        'surface-dark': '#201d1d',
-        'on-primary': '#fdfcfc',
-        'on-dark': '#fdfcfc',
-        'hairline': 'rgba(15,0,0,0.12)',
-        'hairline-strong': '#646262'
+        ink: scopedColor('#201d1d', 'ink'),
+        'ink-deep': scopedColor('#0f0000', 'ink-deep'),
+        charcoal: scopedColor('#302c2c', 'charcoal'),
+        canvas: scopedColor('#fdfcfc', 'canvas'),
+        'surface-soft': scopedColor('#f8f7f7', 'surface-soft'),
+        'surface-card': scopedColor('#f1eeee', 'surface-card'),
+        'surface-dark': scopedColor('#201d1d', 'surface-dark'),
+        'on-primary': scopedColor('#fdfcfc', 'on-primary'),
+        'on-dark': scopedColor('#fdfcfc', 'on-dark'),
+        'hairline': 'rgb(var(--ui-hairline, 15 0 0) / calc(var(--ui-hairline-opacity, 0.12) * <alpha-value>))',
+        'hairline-strong': scopedColor('#646262', 'hairline-strong')
       },
       fontFamily: {
-        sans: monoStack,
+        sans: [`var(--ui-font-sans, ${monoStack.map((font) => font.includes(' ') ? `"${font}"` : font).join(', ')})`],
         mono: monoStack
       },
       // Flat-on-cream: the system has no drop shadows.
@@ -194,17 +191,17 @@ export default {
         'card-hover': 'none',
         'inner-glow': 'none'
       },
-      // 4px on interactive elements; containers stay sharp.
+      // Public 4px radii; console routes supply their component hierarchy.
       borderRadius: {
         none: '0px',
-        sm: '4px',
-        DEFAULT: '4px',
-        md: '4px',
-        lg: '4px',
-        xl: '4px',
-        '2xl': '4px',
-        '3xl': '4px',
-        '4xl': '4px'
+        sm: 'var(--ui-radius-sm, 4px)',
+        DEFAULT: 'var(--ui-radius-md, 4px)',
+        md: 'var(--ui-radius-md, 4px)',
+        lg: 'var(--ui-radius-lg, 4px)',
+        xl: 'var(--ui-radius-xl, 4px)',
+        '2xl': 'var(--ui-radius-2xl, 4px)',
+        '3xl': 'var(--ui-radius-3xl, 4px)',
+        '4xl': 'var(--ui-radius-4xl, 4px)'
       },
       backgroundImage: {
         // Flatten brand gradients to solid ink

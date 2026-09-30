@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useChartTheme } from '@/composables/useChartTheme'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,15 +35,15 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 
-const isDarkMode = computed(() => document.documentElement.classList.contains('dark'))
+const { colors: chartTheme, tooltipStyle } = useChartTheme()
 const colors = computed(() => ({
-  red: '#ef4444',
-  redAlpha: '#ef444420',
-  purple: '#8b5cf6',
-  purpleAlpha: '#8b5cf620',
-  gray: '#9ca3af',
-  grid: isDarkMode.value ? '#374151' : '#f3f4f6',
-  text: isDarkMode.value ? '#9ca3af' : '#6b7280'
+  red: chartTheme.value.error,
+  redAlpha: `${chartTheme.value.error}20`,
+  purple: chartTheme.value.amber,
+  purpleAlpha: `${chartTheme.value.amber}20`,
+  gray: chartTheme.value.muted,
+  grid: chartTheme.value.grid,
+  text: chartTheme.value.text,
 }))
 
 const totalRequestErrors = computed(() => sumNumbers(props.points.map((p) => p.error_count_sla ?? 0)))
@@ -116,12 +117,10 @@ const options = computed(() => {
       legend: {
         position: 'top' as const,
         align: 'end' as const,
-        labels: { color: c.text, usePointStyle: true, boxWidth: 6, font: { size: 10 } }
+        labels: { color: c.text, usePointStyle: true, boxWidth: 6, font: { family: chartTheme.value.font, size: 10 } }
       },
       tooltip: {
-        backgroundColor: isDarkMode.value ? '#1f2937' : '#ffffff',
-        titleColor: isDarkMode.value ? '#f3f4f6' : '#111827',
-        bodyColor: isDarkMode.value ? '#d1d5db' : '#4b5563',
+        ...tooltipStyle.value,
         borderColor: c.grid,
         borderWidth: 1,
         padding: 10,
@@ -134,7 +133,7 @@ const options = computed(() => {
         grid: { display: false },
         ticks: {
           color: c.text,
-          font: { size: 10 },
+          font: { family: chartTheme.value.font, size: 10 },
           maxTicksLimit: 8,
           autoSkip: true,
           autoSkipPadding: 10
@@ -145,7 +144,7 @@ const options = computed(() => {
         display: true,
         position: 'left' as const,
         grid: { color: c.grid, borderDash: [4, 4] },
-        ticks: { color: c.text, font: { size: 10 }, precision: 0 }
+        ticks: { color: c.text, font: { family: chartTheme.value.font, size: 10 }, precision: 0 }
       }
     }
   }

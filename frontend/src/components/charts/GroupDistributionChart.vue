@@ -38,7 +38,7 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
+        <table class="console-distribution-table w-full text-xs">
           <thead>
             <tr class="text-gray-500 dark:text-gray-400">
               <th class="pb-2 text-left">{{ t('admin.dashboard.group') }}</th>
@@ -110,6 +110,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useChartTheme } from '@/composables/useChartTheme'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -175,18 +176,7 @@ const toggleBreakdown = async (type: string, id: number | string) => {
   }
 }
 
-const chartColors = [
-  '#007aff', // accent
-  '#30d158', // success
-  '#ff9f0a', // warning
-  '#ff3b30', // danger
-  '#201d1d', // ink
-  '#646262', // mute
-  '#9a9898', // ash
-  '#0056b3', // accent-hover
-  '#24a947', // success-deep
-  '#cc7f08' // warning-deep
-]
+const { seriesColors, tooltipStyle } = useChartTheme()
 
 const displayGroupStats = computed(() => {
   if (!props.groupStats?.length) return []
@@ -203,7 +193,7 @@ const chartData = computed(() => {
     datasets: [
       {
         data: displayGroupStats.value.map((g) => toFiniteNumber(props.metric === 'actual_cost' ? g.actual_cost : g.total_tokens)),
-        backgroundColor: chartColors.slice(0, displayGroupStats.value.length),
+        backgroundColor: seriesColors(displayGroupStats.value.length),
         borderWidth: 0
       }
     ]
@@ -218,6 +208,7 @@ const doughnutOptions = computed(() => ({
       display: false
     },
     tooltip: {
+      ...tooltipStyle.value,
       callbacks: {
         label: (context: any) => {
           const value = context.raw as number

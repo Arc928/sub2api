@@ -967,11 +967,11 @@ defineExpose({
   position: sticky;
   top: 0;
   z-index: 200;
-  background-color: rgb(249 250 251);
+  background-color: var(--ui-table-header, rgb(249 250 251));
 }
 
 .dark .table-wrapper .table-header {
-  background-color: rgb(31 41 55);
+  background-color: var(--ui-table-header, rgb(31 41 55));
 }
 
 /* 表体保持在表头下方 */
@@ -985,11 +985,11 @@ defineExpose({
   position: sticky;
   top: 0;
   z-index: 210; /* 必须高于所有表体内容 */
-  background-color: rgb(249 250 251);
+  background-color: var(--ui-table-header, rgb(249 250 251));
 }
 
 .dark .sticky-header-cell {
-  background-color: rgb(31 41 55);
+  background-color: var(--ui-table-header, rgb(31 41 55));
 }
 
 /* Sticky 列基础样式 */
@@ -1025,20 +1025,20 @@ defineExpose({
 
 /* 表体 sticky 列背景 */
 tbody .sticky-col {
-  background-color: white;
+  background-color: var(--ui-table-row, white);
 }
 
 .dark tbody .sticky-col {
-  background-color: rgb(17 24 39);
+  background-color: var(--ui-table-row, rgb(17 24 39));
 }
 
 /* hover 状态保持 */
 tbody tr:hover .sticky-col {
-  background-color: rgb(249 250 251);
+  background-color: var(--ui-table-hover, rgb(249 250 251));
 }
 
 .dark tbody tr:hover .sticky-col {
-  background-color: rgb(31 41 55);
+  background-color: var(--ui-table-hover, rgb(31 41 55));
 }
 
 /* 阴影只在可滚动时显示 */

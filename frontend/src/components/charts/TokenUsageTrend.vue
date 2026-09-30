@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useChartTheme } from '@/composables/useChartTheme'
 import { useI18n } from 'vue-i18n'
 import {
   Chart as ChartJS,
@@ -54,18 +55,15 @@ const props = defineProps<{
   loading?: boolean
 }>()
 
-const isDarkMode = computed(() => {
-  return document.documentElement.classList.contains('dark')
-})
-
+const { colors, tooltipStyle } = useChartTheme()
 const chartColors = computed(() => ({
-  text: isDarkMode.value ? '#e5e7eb' : '#374151',
-  grid: isDarkMode.value ? '#374151' : '#e5e7eb',
-  input: '#3b82f6',
-  output: '#10b981',
-  cacheCreation: '#f59e0b',
-  cacheRead: '#007aff',
-  cacheHitRate: '#8b5cf6'
+  text: colors.value.text,
+  grid: colors.value.grid,
+  input: colors.value.primary,
+  output: colors.value.teal,
+  cacheCreation: colors.value.amber,
+  cacheRead: colors.value.secondary,
+  cacheHitRate: colors.value.tertiary,
 }))
 
 const chartData = computed(() => {
@@ -139,11 +137,13 @@ const lineOptions = computed(() => ({
         pointStyle: 'circle',
         padding: 15,
         font: {
+          family: colors.value.font,
           size: 11
         }
       }
     },
     tooltip: {
+      ...tooltipStyle.value,
       callbacks: {
         label: (context: any) => {
           if (context.dataset.yAxisID === 'yPercent') {
@@ -170,6 +170,7 @@ const lineOptions = computed(() => ({
       ticks: {
         color: chartColors.value.text,
         font: {
+          family: colors.value.font,
           size: 10
         }
       }
@@ -181,6 +182,7 @@ const lineOptions = computed(() => ({
       ticks: {
         color: chartColors.value.text,
         font: {
+          family: colors.value.font,
           size: 10
         },
         callback: (value: string | number) => formatTokens(Number(value))
@@ -196,6 +198,7 @@ const lineOptions = computed(() => ({
       ticks: {
         color: chartColors.value.cacheHitRate,
         font: {
+          family: colors.value.font,
           size: 10
         },
         callback: (value: string | number) => `${value}%`

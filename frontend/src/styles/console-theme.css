@@ -1,0 +1,506 @@
+/* Self-hosted OFL fonts; only console routes reference these families. */
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin-500.woff2') format('woff2');
+}
+
+/* RGB channels allow inherited Tailwind colors to retain opacity modifiers. */
+:root[data-ui-theme='claude-console'] {
+  --ui-neutral-50: 250 249 245;
+  --ui-neutral-100: 245 240 232;
+  --ui-neutral-200: 230 223 216;
+  --ui-neutral-300: 210 201 187;
+  --ui-neutral-400: 142 139 130;
+  --ui-neutral-500: 108 106 100;
+  --ui-neutral-600: 108 106 100;
+  --ui-neutral-700: 61 61 58;
+  --ui-neutral-800: 37 37 35;
+  --ui-neutral-900: 20 20 19;
+  --ui-neutral-950: 20 20 19;
+  --ui-primary-50: 248 238 232;
+  --ui-primary-100: 240 222 211;
+  --ui-primary-200: 230 192 172;
+  --ui-primary-300: 220 162 138;
+  --ui-primary-400: 204 120 92;
+  --ui-primary-500: 204 120 92;
+  --ui-primary-600: 169 88 62;
+  --ui-primary-700: 144 72 51;
+  --ui-primary-800: 120 59 44;
+  --ui-primary-900: 89 47 37;
+  --ui-primary-950: 57 32 25;
+  --ui-dark-50: 250 249 245;
+  --ui-dark-100: 230 223 216;
+  --ui-dark-200: 198 193 182;
+  --ui-dark-300: 160 157 150;
+  --ui-dark-400: 160 157 150;
+  --ui-dark-500: 121 118 111;
+  --ui-dark-600: 61 58 53;
+  --ui-dark-700: 51 47 42;
+  --ui-dark-800: 37 35 32;
+  --ui-dark-900: 31 30 27;
+  --ui-dark-950: 24 23 21;
+  --ui-danger-50: 252 242 240;
+  --ui-danger-100: 246 223 219;
+  --ui-danger-200: 237 190 186;
+  --ui-danger-300: 227 152 146;
+  --ui-danger-400: 214 107 98;
+  --ui-danger-500: 198 69 69;
+  --ui-danger-600: 166 55 55;
+  --ui-danger-700: 135 45 45;
+  --ui-danger-800: 103 39 39;
+  --ui-danger-900: 69 32 30;
+  --ui-danger-950: 45 24 23;
+  --ui-success-50: 240 247 239;
+  --ui-success-100: 224 238 220;
+  --ui-success-200: 193 219 185;
+  --ui-success-300: 157 201 144;
+  --ui-success-400: 118 189 122;
+  --ui-success-500: 93 184 114;
+  --ui-success-600: 57 123 72;
+  --ui-success-700: 46 99 59;
+  --ui-success-800: 38 75 48;
+  --ui-success-900: 30 56 38;
+  --ui-success-950: 23 39 28;
+  --ui-warning-50: 252 248 236;
+  --ui-warning-100: 246 238 208;
+  --ui-warning-200: 239 220 170;
+  --ui-warning-300: 230 196 119;
+  --ui-warning-400: 222 177 73;
+  --ui-warning-500: 212 160 23;
+  --ui-warning-600: 144 107 19;
+  --ui-warning-700: 114 84 23;
+  --ui-warning-800: 86 63 24;
+  --ui-warning-900: 61 47 25;
+  --ui-warning-950: 43 35 24;
+  --ui-accent-50: 239 247 244;
+  --ui-accent-100: 220 240 233;
+  --ui-accent-200: 185 223 211;
+  --ui-accent-300: 145 207 192;
+  --ui-accent-400: 114 196 178;
+  --ui-accent-500: 93 184 166;
+  --ui-accent-600: 56 127 115;
+  --ui-accent-700: 47 104 94;
+  --ui-accent-800: 41 82 75;
+  --ui-accent-900: 36 63 57;
+  --ui-accent-950: 28 45 41;
+  --ui-white: 250 249 245;
+  --ui-ink: 20 20 19;
+  --ui-ink-deep: 20 20 19;
+  --ui-charcoal: 37 37 35;
+  --ui-canvas: 250 249 245;
+  --ui-surface-soft: 245 240 232;
+  --ui-surface-card: 239 233 222;
+  --ui-surface-dark: 24 23 21;
+  --ui-on-primary: 255 255 255;
+  --ui-on-dark: 250 249 245;
+  --ui-hairline: 230 223 216;
+  --ui-hairline-strong: 210 201 187;
+  --ui-hairline-opacity: 1;
+  --ui-font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ui-font-display: 'Cormorant Garamond', 'Noto Serif SC', 'Songti SC', SimSun, Georgia, serif;
+  --ui-radius-sm: 6px;
+  --ui-radius-md: 8px;
+  --ui-radius-lg: 12px;
+  --ui-radius-xl: 16px;
+  --ui-radius-2xl: 16px;
+  --ui-radius-3xl: 16px;
+  --ui-radius-4xl: 16px;
+  --ui-panel: 239 233 222;
+  --ui-field: 250 249 245;
+  --ui-text: 61 61 58;
+  --ui-title: 20 20 19;
+  --ui-muted: 108 106 100;
+  --ui-border: 230 223 216;
+  --ui-selected: 232 224 210;
+  --ui-focus: 204 120 92;
+  --ui-table-header: rgb(var(--ui-panel));
+  --ui-table-row: rgb(var(--ui-field));
+  --ui-table-hover: rgb(var(--ui-selected));
+}
+
+:root.dark[data-ui-theme='claude-console'] {
+  --ui-panel: 37 35 32;
+  --ui-field: 31 30 27;
+  --ui-text: 230 223 216;
+  --ui-title: 250 249 245;
+  --ui-muted: 160 157 150;
+  --ui-border: 61 58 53;
+  --ui-selected: 51 47 42;
+  --ui-table-header: rgb(var(--ui-panel));
+  --ui-table-row: rgb(var(--ui-field));
+  --ui-table-hover: rgb(var(--ui-selected));
+}
+
+/* This sheet is outside Tailwind layers so semantic component rules also
+   override older utilities and scoped component styles, only in this theme. */
+html[data-ui-theme='claude-console'] body {
+  background: rgb(var(--ui-canvas));
+  color: rgb(var(--ui-text));
+  font-family: var(--ui-font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.dark[data-ui-theme='claude-console'] body {
+  background: rgb(var(--ui-dark-950));
+}
+
+html[data-ui-theme='claude-console'] :is(h1, h2, .page-title) {
+  color: rgb(var(--ui-title));
+  font-family: var(--ui-font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+html[data-ui-theme='claude-console'] :is(h3, h4, h5, h6) {
+  font-family: var(--ui-font-sans);
+  font-weight: 500;
+}
+
+html[data-ui-theme='claude-console'] .page-title {
+  font-size: 28px;
+}
+
+html[data-ui-theme='claude-console'] .console-header h1 {
+  font-size: 24px;
+}
+
+html[data-ui-theme='claude-console'] .btn {
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+html[data-ui-theme='claude-console'] .btn-sm {
+  min-height: 32px;
+  padding: 6px 12px;
+}
+
+html[data-ui-theme='claude-console'] .btn-lg {
+  min-height: 44px;
+}
+
+html[data-ui-theme='claude-console'] .btn-icon {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+html[data-ui-theme='claude-console'] .btn-primary {
+  background: rgb(var(--ui-primary-600));
+  color: rgb(var(--ui-on-primary));
+}
+
+html[data-ui-theme='claude-console'] .btn-primary:is(:hover, :active) {
+  background: rgb(var(--ui-primary-700));
+}
+
+html[data-ui-theme='claude-console'] .bg-primary-500.text-white {
+  background: rgb(var(--ui-primary-600));
+}
+
+html[data-ui-theme='claude-console'] .btn-secondary {
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-field));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] .btn-ghost {
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] :is(.btn-secondary, .btn-ghost):hover {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] .btn:disabled {
+  background: rgb(var(--ui-panel));
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] :is(.input, .select-trigger) {
+  border-radius: 8px;
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-field));
+  color: rgb(var(--ui-text));
+}
+
+html[data-ui-theme='claude-console'] .select-trigger {
+  min-height: 40px;
+}
+
+html[data-ui-theme='claude-console'] .input {
+  padding: 10px 14px;
+}
+
+html[data-ui-theme='claude-console'] input:is([type='checkbox'], [type='radio']) {
+  accent-color: rgb(var(--ui-primary-600));
+}
+
+html[data-ui-theme='claude-console'] :is(.input:focus, .select-trigger:focus-visible, .select-trigger-open, .btn:focus-visible) {
+  outline: none;
+  border-color: rgb(var(--ui-focus));
+  box-shadow: 0 0 0 3px rgb(var(--ui-focus) / 0.15);
+}
+
+html[data-ui-theme='claude-console'] :is(.input-error, .input-error:focus, .select-trigger-error, .select-trigger-error:focus-visible) {
+  border-color: rgb(var(--ui-danger-500));
+  box-shadow: 0 0 0 3px rgb(var(--ui-danger-500) / 0.15);
+}
+
+html[data-ui-theme='claude-console'] :is(.input:disabled, .select-trigger-disabled) {
+  background: rgb(var(--ui-panel));
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] :is(.card, .card-glass, .glass-card, .stat-card) {
+  border-radius: 12px;
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-panel));
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-ui-theme='claude-console'] :is(.card-header, .card-footer, .modal-header, .modal-footer) {
+  border-color: rgb(var(--ui-border));
+}
+
+html[data-ui-theme='claude-console'] :is(.modal-content, .dropdown, .select-dropdown-portal) {
+  border-radius: 12px;
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-field));
+  color: rgb(var(--ui-text));
+  box-shadow: 0 1px 3px rgb(20 20 19 / 0.08);
+}
+
+html[data-ui-theme='claude-console'] .modal-title {
+  color: rgb(var(--ui-title));
+  font-size: 18px;
+  font-weight: 500;
+}
+
+html[data-ui-theme='claude-console'] :is(.dropdown-item:hover, .select-option-selected, .select-option-focused) {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] :is(.table-container, .table-scroll-container) {
+  border-radius: 12px;
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-field));
+}
+
+html[data-ui-theme='claude-console'] :is(.table th, .table-scroll-container thead) {
+  background: rgb(var(--ui-panel));
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] :is(.table th, .table td, .table-scroll-container th, .table-scroll-container td) {
+  border-color: rgb(var(--ui-border));
+}
+
+html[data-ui-theme='claude-console'] .console-distribution-table {
+  min-width: 360px;
+}
+
+html[data-ui-theme='claude-console'] .console-distribution-table :is(th, td) {
+  padding: 6px 8px;
+}
+
+html[data-ui-theme='claude-console'] :is(.badge, .badge-primary, .badge-gray, .badge-purple) {
+  border-radius: 9999px;
+}
+
+html[data-ui-theme='claude-console'] .badge-primary {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] .tabs {
+  gap: 4px;
+  border-color: rgb(var(--ui-border));
+}
+
+html[data-ui-theme='claude-console'] .tab {
+  border: 0;
+  border-radius: 8px;
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] .tab-active {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] .console-pagination {
+  gap: 4px;
+}
+
+html[data-ui-theme='claude-console'] .console-pagination > button {
+  min-width: 36px;
+  min-height: 36px;
+  margin-left: 0;
+  border-radius: 8px;
+  border-color: rgb(var(--ui-border));
+  background: rgb(var(--ui-field));
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] .console-pagination > button[aria-current='page'] {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] :is(.progress, .switch, .switch-thumb) {
+  border-radius: 9999px;
+}
+
+html[data-ui-theme='claude-console'] :is(.progress-bar, .switch-active) {
+  border-color: rgb(var(--ui-primary-600));
+  background: rgb(var(--ui-primary-600));
+}
+
+html[data-ui-theme='claude-console'] .switch-active .switch-thumb {
+  background: rgb(var(--ui-on-primary));
+}
+
+html[data-ui-theme='claude-console'] .sidebar {
+  background: rgb(var(--ui-surface-soft));
+  border-color: rgb(var(--ui-border));
+}
+
+html.dark[data-ui-theme='claude-console'] .sidebar {
+  background: rgb(var(--ui-dark-900));
+}
+
+html[data-ui-theme='claude-console'] .sidebar-header {
+  height: 64px;
+  border-color: rgb(var(--ui-border));
+}
+
+html[data-ui-theme='claude-console'] .sidebar-link {
+  min-height: 40px;
+  border-radius: 8px;
+  color: rgb(var(--ui-muted));
+}
+
+html[data-ui-theme='claude-console'] .sidebar-link:is(:hover, .sidebar-link-active) {
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+}
+
+html[data-ui-theme='claude-console'] .sidebar-section-title {
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+html[data-ui-theme='claude-console'] .console-header {
+  border-color: rgb(var(--ui-border));
+}
+
+html[data-ui-theme='claude-console'] .console-avatar {
+  border-radius: 50%;
+  background: rgb(var(--ui-selected));
+  color: rgb(var(--ui-title));
+  box-shadow: none;
+}
+
+html[data-ui-theme='claude-console'] .console-balance {
+  background: rgb(var(--ui-selected));
+}
+
+html[data-ui-theme='claude-console'] .stat-value {
+  color: rgb(var(--ui-title));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-ui-theme='claude-console'] .code-block {
+  border-radius: 12px;
+  background: rgb(var(--ui-surface-dark));
+  color: rgb(var(--ui-on-dark));
+}
+
+html[data-ui-theme='claude-console'] .toast {
+  border-radius: 12px;
+  background: rgb(var(--ui-field));
+  color: rgb(var(--ui-text));
+}
+
+/* Native focus indicators on inline buttons/links stay visible. */
+html[data-ui-theme='claude-console'] :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid rgb(var(--ui-focus));
+  outline-offset: 2px;
+}
+
+@media (max-width: 1023px) {
+  html[data-ui-theme='claude-console'] .table-page-layout.mobile-mode .table-scroll-container {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+}
+
+html[data-ui-theme='claude-console'] .console-redeem-banner {
+  background: rgb(var(--ui-surface-dark));
+  color: rgb(var(--ui-on-dark));
+}
+
+html[data-ui-theme='claude-console'] .console-redeem-banner :is(h1, h2, h3) {
+  color: rgb(var(--ui-on-dark));
+}
+
+/* driver.js uses important rules and its own font; keep onboarding in theme. */
+html[data-ui-theme='claude-console'] .driver-popover.theme-tour-popover {
+  border-radius: 12px !important;
+  border-color: rgb(var(--ui-border)) !important;
+  background-color: rgb(var(--ui-field)) !important;
+  color: rgb(var(--ui-text)) !important;
+}
+
+html[data-ui-theme='claude-console'] .theme-tour-popover,
+html[data-ui-theme='claude-console'] .theme-tour-popover :is(.driver-popover-title, .driver-popover-description, .driver-popover-footer, .driver-popover-footer *) {
+  font-family: var(--ui-font-sans) !important;
+}
+
+html[data-ui-theme='claude-console'] .theme-tour-popover :is(.driver-popover-title, .driver-popover-title *, .driver-popover-title-text) {
+  color: rgb(var(--ui-title)) !important;
+  font-weight: 500 !important;
+}
+
+html[data-ui-theme='claude-console'] .theme-tour-popover .driver-popover-description {
+  color: rgb(var(--ui-text)) !important;
+}
+
+html[data-ui-theme='claude-console'] .theme-tour-popover .driver-popover-footer {
+  border-color: rgb(var(--ui-border)) !important;
+  background-color: rgb(var(--ui-panel)) !important;
+}
+
+html[data-ui-theme='claude-console'] .theme-tour-popover .driver-popover-next-btn {
+  border-radius: 8px !important;
+  border-color: rgb(var(--ui-primary-600)) !important;
+  background-color: rgb(var(--ui-primary-600)) !important;
+  color: rgb(var(--ui-on-primary)) !important;
+}
+
+html[data-ui-theme='claude-console'] .driver-active-element {
+  border-radius: 8px !important;
+  outline-color: rgb(var(--ui-focus)) !important;
+}

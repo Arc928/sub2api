@@ -183,10 +183,11 @@ export function useSwipeSelect(
     removeMarquee() // defensive: remove any stale marquee
     marqueeEl = document.createElement('div')
     const isDark = document.documentElement.classList.contains('dark')
+    const focusColor = `var(--ui-focus, ${isDark ? '96 165 250' : '59 130 246'})`
     Object.assign(marqueeEl.style, {
       position: 'fixed',
-      background: isDark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(59, 130, 246, 0.12)',
-      border: isDark ? '1.5px solid rgba(96, 165, 250, 0.5)' : '1.5px solid rgba(59, 130, 246, 0.4)',
+      background: `rgb(${focusColor} / ${isDark ? '0.15' : '0.12'})`,
+      border: `1.5px solid rgb(${focusColor} / ${isDark ? '0.5' : '0.4'})`,
       borderRadius: '4px',
       pointerEvents: 'none',
       zIndex: '9999',

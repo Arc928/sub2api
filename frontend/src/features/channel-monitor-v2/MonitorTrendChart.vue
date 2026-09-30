@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useChartTheme } from '@/composables/useChartTheme'
 import { computed, ref, watch } from 'vue'
 import {
   Chart as ChartJS,
@@ -98,9 +99,7 @@ const chartRef = ref<HTMLElement | null>(null)
 const zoom = ref<ZoomState>(resetZoom())
 const zoomed = computed(() => isZoomed(zoom.value))
 
-const isDark = computed(() =>
-  typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
-)
+const { colors, tooltipStyle } = useChartTheme()
 
 const bucketLabel = computed(() => {
   const seconds = props.coverage?.bucket_seconds || 60
@@ -131,8 +130,8 @@ const chartData = computed(() => {
       {
         label: t('channelMonitorV2.chart.errorDataset'),
         data: errorRates,
-        borderColor: '#ef4444',
-        backgroundColor: 'rgba(239, 67, 67, 0.10)',
+        borderColor: colors.value.error,
+        backgroundColor: `${colors.value.error}1a`,
         yAxisID: 'yPct',
         tension: 0.4,
         cubicInterpolationMode: 'monotone' as const,
@@ -145,8 +144,8 @@ const chartData = computed(() => {
       {
         label: t('channelMonitorV2.chart.cacheDataset'),
         data: cacheRates,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+        borderColor: colors.value.success,
+        backgroundColor: `${colors.value.success}14`,
         yAxisID: 'yPct',
         tension: 0.4,
         cubicInterpolationMode: 'monotone' as const,
@@ -159,8 +158,8 @@ const chartData = computed(() => {
       {
         label: t('channelMonitorV2.chart.ttftDataset'),
         data: ttftP50,
-        borderColor: '#007aff',
-        backgroundColor: 'rgba(14, 165, 233, 0.08)',
+        borderColor: colors.value.teal,
+        backgroundColor: `${colors.value.teal}14`,
         yAxisID: 'yTtft',
         tension: 0.4,
         cubicInterpolationMode: 'monotone' as const,
@@ -205,11 +204,7 @@ function smoothTrend(values: Array<number | null>): Array<number | null> {
 }
 
 const chartOptions = computed(() => {
-  const text = isDark.value ? '#9ca3af' : '#6b7280'
-  const grid = isDark.value ? '#374151' : '#f3f4f6'
-  const tooltipBg = isDark.value ? '#1f2937' : '#ffffff'
-  const tooltipTitle = isDark.value ? '#f3f4f6' : '#111827'
-  const tooltipBody = isDark.value ? '#d1d5db' : '#4b5563'
+  const { text, grid } = colors.value
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -217,11 +212,7 @@ const chartOptions = computed(() => {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: tooltipBg,
-        titleColor: tooltipTitle,
-        bodyColor: tooltipBody,
-        borderColor: grid,
-        borderWidth: 1,
+        ...tooltipStyle.value,
         padding: 10,
         displayColors: true,
         callbacks: {
@@ -239,7 +230,7 @@ const chartOptions = computed(() => {
     },
     scales: {
       x: {
-        ticks: { color: text, maxRotation: 0, autoSkip: true, maxTicksLimit: 8, autoSkipPadding: 10, font: { size: 10 } },
+        ticks: { color: text, maxRotation: 0, autoSkip: true, maxTicksLimit: 8, autoSkipPadding: 10, font: { family: colors.value.font, size: 10 } },
         grid: { display: false },
       },
       yPct: {
@@ -249,23 +240,23 @@ const chartOptions = computed(() => {
         suggestedMax: 100,
         ticks: {
           color: text,
-          font: { size: 10 },
+          font: { family: colors.value.font, size: 10 },
           callback: (v: string | number) => `${v}%`,
         },
         grid: { color: grid, borderDash: [4, 4] },
-        title: { display: true, text: t('channelMonitorV2.chart.percentAxis'), color: text, font: { size: 11 } },
+        title: { display: true, text: t('channelMonitorV2.chart.percentAxis'), color: text, font: { family: colors.value.font, size: 11 } },
       },
       yTtft: {
         type: 'linear' as const,
         position: 'right' as const,
         min: 0,
         ticks: {
-          color: '#007aff',
-          font: { size: 10 },
+          color: colors.value.teal,
+          font: { family: colors.value.font, size: 10 },
           callback: (v: string | number) => formatMonitorMs(Number(v)),
         },
         grid: { display: false },
-        title: { display: true, text: t('channelMonitorV2.metrics.ttftP50'), color: '#007aff', font: { size: 11 } },
+        title: { display: true, text: t('channelMonitorV2.metrics.ttftP50'), color: colors.value.teal, font: { family: colors.value.font, size: 11 } },
       },
     },
   }

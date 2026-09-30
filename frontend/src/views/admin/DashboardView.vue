@@ -363,6 +363,7 @@ import type {
   UserSpendingRankingItem
 } from '@/types'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import { useChartTheme } from '@/composables/useChartTheme'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import Icon from '@/components/icons/Icon.vue'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
@@ -444,16 +445,7 @@ const granularityOptions = computed(() => [
   { value: 'hour', label: t('admin.dashboard.hour') }
 ])
 
-// Dark mode detection
-const isDarkMode = computed(() => {
-  return document.documentElement.classList.contains('dark')
-})
-
-// Chart colors
-const chartColors = computed(() => ({
-  text: isDarkMode.value ? '#e5e7eb' : '#374151',
-  grid: isDarkMode.value ? '#374151' : '#e5e7eb'
-}))
+const { colors: chartColors, seriesColors, tooltipStyle } = useChartTheme()
 
 // Line chart options (for user trend chart)
 const lineOptions = computed(() => ({
@@ -472,11 +464,13 @@ const lineOptions = computed(() => ({
         pointStyle: 'circle',
         padding: 15,
         font: {
+          family: chartColors.value.font,
           size: 11
         }
       }
     },
     tooltip: {
+      ...tooltipStyle.value,
       itemSort: (a: any, b: any) => {
         const aValue = typeof a?.raw === 'number' ? a.raw : Number(a?.parsed?.y ?? 0)
         const bValue = typeof b?.raw === 'number' ? b.raw : Number(b?.parsed?.y ?? 0)
@@ -497,6 +491,7 @@ const lineOptions = computed(() => ({
       ticks: {
         color: chartColors.value.text,
         font: {
+          family: chartColors.value.font,
           size: 10
         }
       }
@@ -508,6 +503,7 @@ const lineOptions = computed(() => ({
       ticks: {
         color: chartColors.value.text,
         font: {
+          family: chartColors.value.font,
           size: 10
         },
         callback: (value: string | number) => formatUserTrendValue(Number(value))
@@ -548,20 +544,7 @@ const userTrendChartData = computed(() => {
   })
 
   const sortedDates = Array.from(allDates).sort()
-  const colors = [
-    '#007aff', // accent
-    '#30d158', // success
-    '#ff9f0a', // warning
-    '#ff3b30', // danger
-    '#201d1d', // ink
-    '#646262', // mute
-    '#9a9898', // ash
-    '#0056b3', // accent-hover
-    '#24a947', // success-deep
-    '#cc7f08', // warning-deep
-    '#d70015', // danger-deep
-    '#424245' // body
-  ]
+  const colors = seriesColors(userGroups.size)
 
   const datasets = Array.from(userGroups.values()).map((group, idx) => ({
     label: group.name,

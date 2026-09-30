@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useChartTheme } from '@/composables/useChartTheme'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,12 +32,12 @@ interface Props {
 const props = defineProps<Props>()
 const { t } = useI18n()
 
-const isDarkMode = computed(() => document.documentElement.classList.contains('dark'))
+const { colors: chartTheme, tooltipStyle } = useChartTheme()
 const colors = computed(() => ({
-  teal: '#201d1d',
-  tealAlpha: '#201d1d20',
-  grid: isDarkMode.value ? '#3a3535' : '#f1eeee',
-  text: isDarkMode.value ? '#9a9898' : '#646262'
+  teal: chartTheme.value.teal,
+  tealAlpha: `${chartTheme.value.teal}20`,
+  grid: chartTheme.value.grid,
+  text: chartTheme.value.text,
 }))
 
 const totalRequests = computed(() => sumNumbers(props.points.map((p) => p.request_count)))
@@ -81,12 +82,10 @@ const options = computed(() => {
       legend: {
         position: 'top' as const,
         align: 'end' as const,
-        labels: { color: c.text, usePointStyle: true, boxWidth: 6, font: { size: 10 } }
+        labels: { color: c.text, usePointStyle: true, boxWidth: 6, font: { family: chartTheme.value.font, size: 10 } }
       },
       tooltip: {
-        backgroundColor: isDarkMode.value ? '#1f2937' : '#ffffff',
-        titleColor: isDarkMode.value ? '#f3f4f6' : '#111827',
-        bodyColor: isDarkMode.value ? '#d1d5db' : '#4b5563',
+        ...tooltipStyle.value,
         borderColor: c.grid,
         borderWidth: 1,
         padding: 10,
@@ -105,7 +104,7 @@ const options = computed(() => {
         grid: { display: false },
         ticks: {
           color: c.text,
-          font: { size: 10 },
+          font: { family: chartTheme.value.font, size: 10 },
           maxTicksLimit: 8,
           autoSkip: true,
           autoSkipPadding: 10
@@ -118,7 +117,7 @@ const options = computed(() => {
         grid: { color: c.grid, borderDash: [4, 4] },
         ticks: {
           color: c.text,
-          font: { size: 10 },
+          font: { family: chartTheme.value.font, size: 10 },
           callback: (value: any) => Number(value).toFixed(3)
         }
       }

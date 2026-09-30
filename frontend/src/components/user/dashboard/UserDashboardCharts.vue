@@ -33,7 +33,7 @@
             <div v-else class="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">{{ t('dashboard.noDataAvailable') }}</div>
           </div>
           <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-            <table class="w-full text-xs">
+            <table class="console-distribution-table w-full text-xs">
               <thead>
                 <tr class="text-gray-500 dark:text-gray-400">
                   <th class="pb-2 text-left">{{ t('dashboard.model') }}</th>
@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useChartTheme } from '@/composables/useChartTheme'
 import { useI18n } from 'vue-i18n'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
@@ -79,25 +80,27 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcEleme
 const props = defineProps<{ loading: boolean, startDate: string, endDate: string, granularity: string, trend: TrendDataPoint[], models: ModelStat[] }>()
 defineEmits(['update:startDate', 'update:endDate', 'update:granularity', 'dateRangeChange', 'granularityChange', 'refresh'])
 const { t } = useI18n()
+const { seriesColors, tooltipStyle } = useChartTheme()
 
 const modelData = computed(() => !props.models?.length ? null : {
   labels: props.models.map((m: ModelStat) => m.model),
   datasets: [{
     data: props.models.map((m: ModelStat) => m.total_tokens),
-    backgroundColor: ['#007aff', '#30d158', '#ff9f0a', '#ff3b30', '#201d1d', '#646262', '#9a9898', '#0056b3']
+    backgroundColor: seriesColors(props.models.length)
   }]
 })
 
-const doughnutOptions = {
+const doughnutOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
     tooltip: {
+      ...tooltipStyle.value,
       callbacks: {
         label: (context: any) => `${context.label}: ${formatTokens(context.parsed)} tokens`
       }
     }
   }
-}
+}))
 </script>

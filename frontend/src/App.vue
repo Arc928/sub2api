@@ -11,6 +11,7 @@ import { getSetupStatus } from '@/api/setup'
 import { updateFavicon } from '@/utils/branding'
 import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 import { resolveSiteBillingMode } from '@/utils/siteBillingMode'
+import { useConsoleTheme } from '@/composables/useConsoleTheme'
 
 const router = useRouter()
 const route = useRoute()
@@ -20,6 +21,8 @@ const subscriptionStore = useSubscriptionStore()
 const announcementStore = useAnnouncementStore()
 const adminComplianceStore = useAdminComplianceStore()
 const adminSettingsStore = useAdminSettingsStore()
+
+useConsoleTheme()
 
 function updateDocumentTitle() {
   const customMenuItems = [
