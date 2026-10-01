@@ -10,11 +10,11 @@
       <div class="mb-8 text-center">
         <!-- Custom Logo or Default Logo -->
         <template v-if="settingsLoaded">
-          <div
-            class="mb-4 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-sm border border-hairline dark:border-dark-600"
-          >
-            <img :src="siteLogo || '/logo.svg'" alt="Logo" class="h-full w-full object-contain" />
-          </div>
+          <img
+            :src="siteLogo || '/logo.svg'"
+            alt="Logo"
+            class="mb-4 inline-block h-16 w-16 object-contain"
+          />
           <h1 class="mb-2 text-2xl font-bold text-ink dark:text-gray-50">
             {{ siteName }}
           </h1>
