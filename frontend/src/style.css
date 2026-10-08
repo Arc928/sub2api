@@ -171,7 +171,10 @@
    * text-input: surface-soft fill, hairline border, 4px radius, 40px.
    * Focus: flips to canvas + solid ink border (flat signal, no glow halo). */
   .input {
-    @apply h-10 w-full rounded-sm border border-hairline px-3 py-2 text-sm;
+    @apply h-10 w-full rounded-sm border border-hairline text-sm;
+    /* Theme defaults stay in the component layer so padding utilities can
+       reserve space for prefixes, suffixes, and compact field layouts. */
+    padding: var(--ui-input-padding-y, 0.5rem) var(--ui-input-padding-x, 0.75rem);
     @apply bg-surface-soft text-ink;
     @apply dark:border-dark-500 dark:bg-dark-800 dark:text-gray-100;
     @apply placeholder:text-gray-400 dark:placeholder:text-dark-300;

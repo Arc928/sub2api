@@ -246,7 +246,21 @@ html[data-ui-theme='claude-console'] .select-trigger {
 }
 
 html[data-ui-theme='claude-console'] .input {
-  padding: 10px 14px;
+  --ui-input-padding-y: 10px;
+  --ui-input-padding-x: 14px;
+}
+
+/* Replace the browser's bright resize grip with two muted diagonal strokes. */
+html[data-ui-theme='claude-console'] textarea::-webkit-resizer {
+  background-color: inherit;
+  background-image: linear-gradient(
+    135deg,
+    transparent 60%,
+    rgb(var(--ui-muted) / 0.55) 60% 66%,
+    transparent 66% 78%,
+    rgb(var(--ui-muted) / 0.55) 78% 84%,
+    transparent 84%
+  );
 }
 
 html[data-ui-theme='claude-console'] input:is([type='checkbox'], [type='radio']) {
