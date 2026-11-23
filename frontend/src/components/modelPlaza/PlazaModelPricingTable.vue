@@ -9,9 +9,20 @@
       <header class="model-card-head">
         <div class="min-w-0">
           <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-            <h3 class="break-all text-base font-semibold text-gray-950 dark:text-white">
-              {{ m.name }}
-            </h3>
+            <div class="flex min-w-0 items-center gap-1">
+              <h3 class="min-w-0 break-all text-base font-semibold text-gray-950 dark:text-white">
+                {{ m.name }}
+              </h3>
+              <button
+                type="button"
+                class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:text-dark-300 dark:hover:bg-dark-700 dark:hover:text-primary-400"
+                :title="t('modelPlaza.table.copyModelId', { model: m.name })"
+                :aria-label="t('modelPlaza.table.copyModelId', { model: m.name })"
+                @click="copyToClipboard(m.name)"
+              >
+                <Icon name="copy" size="sm" aria-hidden="true" />
+              </button>
+            </div>
             <span
               v-if="platform && m.platform !== platform"
               :class="[
@@ -96,6 +107,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Icon from '@/components/icons/Icon.vue'
+import { useClipboard } from '@/composables/useClipboard'
 import { formatScaled } from '@/utils/pricing'
 import { platformAccentColor, platformBadgeLightClass, platformLabel } from '@/utils/platformColors'
 import {
@@ -131,6 +144,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { copyToClipboard } = useClipboard()
 const PER_MILLION = 1_000_000
 const MIN_DECIMALS = 2
 

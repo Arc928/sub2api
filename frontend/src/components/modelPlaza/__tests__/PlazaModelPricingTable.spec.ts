@@ -3,6 +3,14 @@ import { mount } from '@vue/test-utils'
 import PlazaModelPricingTable from '../PlazaModelPricingTable.vue'
 import type { PlazaModel } from '@/api/modelPlaza'
 
+const { copyToClipboard } = vi.hoisted(() => ({
+  copyToClipboard: vi.fn().mockResolvedValue(true)
+}))
+
+vi.mock('@/composables/useClipboard', () => ({
+  useClipboard: () => ({ copyToClipboard })
+}))
+
 vi.mock('vue-i18n', async () => {
   const actual = await vi.importActual<typeof import('vue-i18n')>('vue-i18n')
   return {
@@ -50,6 +58,20 @@ function mountTable(
 }
 
 describe('PlazaModelPricingTable compact cards', () => {
+  it('copies the exact model ID from the clicked pricing card', async () => {
+    const model = tokenModel({ name: 'provider/Model-v2' })
+    const wrapper = mountTable([tokenModel(), model])
+    try {
+      const card = wrapper.findAll('[data-testid="model-price-card"]')
+        .find(card => card.get('h3').text() === model.name)!
+      await card.get('button[aria-label="modelPlaza.table.copyModelId"]').trigger('click')
+
+      expect(copyToClipboard.mock.calls).toEqual([[model.name]])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it.each([
     { enabled: true, multiplier: 1, userRate: 0.05, expected: 1 },
     { enabled: true, multiplier: 0.5, userRate: null, expected: 0.5 },
