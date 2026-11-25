@@ -367,8 +367,13 @@ function toggleTheme() {
 // Initialize theme
 function initTheme() {
   const savedTheme = localStorage.getItem('theme')
-  isDark.value = savedTheme !== 'light'
-  document.documentElement.classList.toggle('dark', isDark.value)
+  if (
+    savedTheme === 'dark' ||
+    (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  ) {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  }
 }
 
 onMounted(() => {

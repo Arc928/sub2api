@@ -78,6 +78,7 @@ describe('HomeView', () => {
     authStore.checkAuth.mockClear()
     appStore.fetchPublicSettings.mockClear()
     localStorage.clear()
+    document.documentElement.classList.remove('dark')
     vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
   })
 
@@ -220,5 +221,21 @@ describe('HomeView', () => {
     expect(fetchMock).toHaveBeenCalledOnce()
     expect(button.attributes('disabled')).toBeUndefined()
     expect(wrapper.get('[role="status"]').text()).toBe('home.endpointCard.error')
+  })
+
+  it('keeps light mode for first-time visitors when system prefers light', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
+
+    mountHome()
+
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it('enables dark mode for first-time visitors when system prefers dark', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList)
+
+    mountHome()
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
   })
 })
