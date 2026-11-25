@@ -96,7 +96,6 @@ func NewModelPlazaService(
 // 模型枚举口径与 ListAvailable 一致（Active 渠道、SupportedModels ∪ 全局定价回落、
 // 平台隔离），仅把顶层从渠道换成分组：
 //   - 渠道按 lower(name) 排序后遍历，保证同名模型去重结果确定；
-//   - 启用分组模型白名单时，仅聚合白名单允许的模型；
 //   - 同分组同名模型「先见者胜」，仅当已存条目无定价而新条目有定价时升级替换；
 //   - token 模型的单价与阶梯按实收口径合成（见 ResolveContextPricingSchedule），
 //     图片计费模型的档位价按实收口径合成（见 plazaImageDisplayPricing）；
@@ -167,7 +166,6 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 			if !ok {
 				continue
 			}
-			g := groupEnt[gid]
 			idx := modelIdx[gid]
 			if idx == nil {
 				idx = make(map[modelKey]int, len(supported))
@@ -175,9 +173,6 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 			}
 			for j := range supported {
 				m := supported[j]
-				if !g.ModelAllowlist.Allows(m.Name) {
-					continue
-				}
 				if pg.Platform == PlatformComposite {
 					if !isConcreteRequestPlatform(m.Platform) {
 						continue
@@ -202,6 +197,8 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 			}
 		}
 	}
+
+	s.applyGroupModelAllowlists(byGroup, groupEnt, channels)
 
 	officialMemo := make(map[string]*PlazaOfficialPricing)
 	out := make([]PlazaGroup, 0, len(order))
