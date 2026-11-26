@@ -1472,8 +1472,11 @@ func isAntigravityThinkingTierAlias(model string) bool {
 // the published token rate, so this keeps -high/-low/-medium and -tiered
 // requests on the corresponding base model's price card.
 func normalizeGeminiThinkingTierAlias(model string) string {
-	for _, baseModel := range []string{"gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-4-argon", "gemini-4-carbon"} {
-		for _, tier := range []string{"-high", "-low", "-medium", "-tiered"} {
+	for _, baseModel := range []string{"gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-4-argon", "gemini-4-carbon", "gemini-4-neon"} {
+		for _, tier := range []string{"-high", "-low", "-medium", "-tiered", "-xhigh"} {
+			if tier == "-xhigh" && baseModel != "gemini-4-neon" {
+				continue
+			}
 			if model == baseModel+tier {
 				return baseModel
 			}
@@ -1865,18 +1868,7 @@ func (s *PricingService) getHashFilePath() string {
 // LiteLLMProvider matches the given provider string (case-insensitive).
 // The returned slice is sorted alphabetically.
 func (s *PricingService) ListModelNamesByProvider(provider string) []string {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	provider = strings.ToLower(strings.TrimSpace(provider))
-	names := make([]string, 0)
-	for name, p := range s.pricingData {
-		if strings.ToLower(p.LiteLLMProvider) == provider {
-			names = append(names, name)
-		}
-	}
-	sort.Strings(names)
-	return names
+	return s.ListModelNamesByProviders(provider)
 }
 
 // isNumeric 检查字符串是否为纯数字
