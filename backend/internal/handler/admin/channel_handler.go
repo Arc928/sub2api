@@ -646,14 +646,18 @@ func (h *ChannelHandler) GetModelDefaultPricing(c *gin.Context) {
 	})
 }
 
-// platformLiteLLMProvider maps a channel platform name to the corresponding
-// LiteLLM provider string used as the key in the pricing catalog (platform list).
-func platformLiteLLMProvider(platform string) (string, bool) {
+// platformLiteLLMProviders maps a channel platform name to the corresponding
+// LiteLLM provider strings used in the pricing catalog.
+// Antigravity serves both Anthropic (Claude) and Gemini models, so it syncs both.
+func platformLiteLLMProviders(platform string) ([]string, bool) {
 	spec, ok := domain.LookupPlatform(platform)
 	if !ok || spec.LiteLLMProvider == "" {
-		return "", false
+		return nil, false
 	}
-	return spec.LiteLLMProvider, true
+	if spec.ID == domain.PlatformAntigravity {
+		return []string{spec.LiteLLMProvider, "gemini"}, true
+	}
+	return []string{spec.LiteLLMProvider}, true
 }
 
 // SyncPricingModels 返回 LiteLLM 定价目录中指定平台的最新模型列表
@@ -666,7 +670,7 @@ func (h *ChannelHandler) SyncPricingModels(c *gin.Context) {
 		return
 	}
 
-	provider, ok := platformLiteLLMProvider(platform)
+	providers, ok := platformLiteLLMProviders(platform)
 	if !ok {
 		response.ErrorFrom(c, infraerrors.BadRequest("UNSUPPORTED_PLATFORM",
 			fmt.Sprintf("unsupported platform: %s", platform)).
@@ -674,6 +678,6 @@ func (h *ChannelHandler) SyncPricingModels(c *gin.Context) {
 		return
 	}
 
-	models := h.pricingService.ListModelNamesByProvider(provider)
+	models := h.pricingService.ListModelNamesByProviders(providers...)
 	response.Success(c, gin.H{"models": models})
 }
