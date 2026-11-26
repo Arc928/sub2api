@@ -541,16 +541,15 @@ func (s *BillingService) initFallbackPricing() {
 		SupportsCacheBreakdown: false,
 	}
 
-	// Gemini 4 Carbon: introductory Google AI rates through 2026-11-30.
-	// From 2026-12-01 the published $2/$10/$0.10 per MTok rates double
-	// to $4/$20/$0.20. Only implicit caching is supported (no storage fee).
+	// Gemini 4 Carbon: standard Google AI rates ($4/$20/$0.20 per MTok;
+	// Priority is 1.8x). Only implicit caching is supported (no storage fee).
 	s.fallbackPrices["gemini-4-carbon"] = &ModelPricing{
-		InputPricePerToken:             2e-6,
-		OutputPricePerToken:            10e-6,
-		CacheReadPricePerToken:         0.1e-6,
-		InputPricePerTokenPriority:     3.6e-6,
-		OutputPricePerTokenPriority:    18e-6,
-		CacheReadPricePerTokenPriority: 0.18e-6,
+		InputPricePerToken:             4e-6,
+		OutputPricePerToken:            20e-6,
+		CacheReadPricePerToken:         0.2e-6,
+		InputPricePerTokenPriority:     7.2e-6,
+		OutputPricePerTokenPriority:    36e-6,
+		CacheReadPricePerTokenPriority: 0.36e-6,
 		SupportsCacheBreakdown:         false,
 	}
 
